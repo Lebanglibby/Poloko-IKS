@@ -1,0 +1,42 @@
+{
+  "app": {
+    "name": "Poloko IKS",
+    "tagline": "Preserving Botswana's Indigenous Knowledge for Future Generations"
+  },
+  "nav": {
+    "vault": "Knowledge Vault",
+    "map": "Resource Map",
+    "research": "Research Hub",
+    "dashboard": "Dashboard",
+    "submit": "Submit Knowledge",
+    "signIn": "Sign In",
+    "register": "Register",
+    "signOut": "Sign Out"
+  },
+  "accessTier": {
+    "public": "Public",
+    "restricted": "Restricted",
+    "sacred": "Sacred"
+  },
+  "category": {
+    "traditional_practice": "Traditional Practice",
+    "flora_medicinal": "Flora & Medicinal Plants",
+    "conservation": "Conservation Technique",
+    "cultural_narrative": "Cultural Narrative",
+    "resource_location": "Resource Location"
+  },
+  "actions": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "approve": "Approve",
+    "deny": "Deny",
+    "requestAccess": "Request Access",
+    "collaborate": "Apply to Collaborate",
+    "publish": "Publish"
+  },
+  "messages": {
+    "loading": "Loading…",
+    "noResults": "No results found.",
+    "error": "Something went wrong. Please try again."
+  }
+}

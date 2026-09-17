@@ -1,0 +1,42 @@
+{
+  "app": {
+    "name": "Poloko IKS",
+    "tagline": "Go Boloka Kitso ya Setso ya Botswana go ya go Ditšhaba tša Bokamoso"
+  },
+  "nav": {
+    "vault": "Seipone sa Kitso",
+    "map": "Mmapa wa Methopo",
+    "research": "Lefelo la Patlisiso",
+    "dashboard": "Setlhomeso",
+    "submit": "Romela Kitso",
+    "signIn": "Tsena",
+    "register": "Ikwadisa",
+    "signOut": "Tswa"
+  },
+  "accessTier": {
+    "public": "Setšhaba",
+    "restricted": "Go Thibetswe",
+    "sacred": "Go Ya Bogosi"
+  },
+  "category": {
+    "traditional_practice": "Tiragalo ya Setso",
+    "flora_medicinal": "Dimela le Ditlhare",
+    "conservation": "Tekolo ya Tikologo",
+    "cultural_narrative": "Pale ya Setso",
+    "resource_location": "Lefelo la Methopo"
+  },
+  "actions": {
+    "submit": "Romela",
+    "cancel": "Khansela",
+    "approve": "Dumela",
+    "deny": "Gana",
+    "requestAccess": "Kopa Tumelo",
+    "collaborate": "Kopa go Dira Mmogo",
+    "publish": "Phatlalatsa"
+  },
+  "messages": {
+    "loading": "O eme…",
+    "noResults": "Ga go na se se bonwang.",
+    "error": "Go ne ga nna le phoso. Leka gape."
+  }
+}
