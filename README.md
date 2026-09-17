@@ -1,4 +1,3 @@
-
 # 🌿 Poloko IKS
 ### Indigenous Knowledge Vault & Research Innovation System
 
@@ -10,10 +9,11 @@
 
 ## What Is Poloko IKS?
 
-Poloko IKS is an open-source web platform that digitizes, protects, and empowers innovation around Botswana's indigenous knowledge systems (IKS). It brings together two core modules:
+Poloko IKS is an open-source web platform that digitizes, protects, and empowers innovation around Botswana's indigenous knowledge systems (IKS). It brings together three core modules:
 
 - **Module 1 — The Knowledge Preservation Vault:** A searchable, public-good digital archive of traditional practices, native flora, and community conservation wisdom — with cryptographic protection against biopiracy.
 - **Module 2 — The Researcher & Innovation Hub:** A marketplace and collaboration workspace where researchers publish, monetize, track usage of, and collaboratively refine studies derived from indigenous knowledge.
+- **Module 3 — The Learning Hub** *(Thuto — Setswana for "education")*: A course and media platform where cultural practitioners, artisans, and knowledge holders teach traditional skills — basket weaving, natural dyeing, traditional architecture, and more — earning income in BWP. Every course is approved by the Elder Board before it goes live.
 
 ---
 
@@ -25,6 +25,7 @@ Poloko IKS is an open-source web platform that digitizes, protects, and empowers
 | No digital infrastructure to protect traditional knowledge from biopiracy | External entities exploit indigenous knowledge without attribution or compensation |
 | Researchers have no platform to monetize or track their IKS-derived work | Lost economic opportunity for local scientists |
 | Sacred/sensitive knowledge is either fully hidden or fully public | No middle ground — knowledge either lost or exposed |
+| Cultural practitioners have no platform to teach and earn from traditional skills | Artisans and elders cannot generate sustainable income from their expertise |
 
 ---
 
@@ -44,6 +45,15 @@ Poloko IKS is an open-source web platform that digitizes, protects, and empowers
 - 🤝 **Collaborative Pipeline** — Open studies for co-authorship with tracked intellectual credit
 - 📊 **Usage & Attribution Tracking** — Transparent audit logs: who viewed, downloaded, or cited your work
 - 🔑 **Research API** — Authenticated API endpoints for licensed third-party data access
+
+### Module 3 — Learning Hub *(Thuto)*
+- 🎓 **Course Catalogue** — Browse structured courses in traditional crafts, ecology, cultural arts, and sustainable practices
+- 🎬 **Media Gallery** — Standalone video demonstrations and photo series from cultural practitioners
+- ✅ **Elder Board Approval** — Every course must be reviewed and approved by the Elder Board before it is published, ensuring cultural accuracy and sovereignty
+- 💳 **Creator Income (BWP)** — Content creators set a price in Botswana Pula; learners pay to enrol; creators receive direct revenue
+- 📚 **Structured Lessons** — Multi-lesson courses with video/image content, materials lists, and step-by-step instructions
+- 🌿 **Free & Paid Tiers** — Creators can offer free introductory lessons alongside paid full courses
+- 🎨 **Example Courses** — *Traditional Tswana Basket Weaving*, *Natural Plant Dyeing Techniques*, *Decoration in Modern Style Using Traditional Items*, *Mophane Worm Preparation & Preservation*
 
 ---
 
@@ -106,12 +116,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 poloko/
 ├── app/                    # Next.js App Router pages and API routes
 │   ├── (auth)/             # Login / Register
-│   ├── (public)/           # Public pages (vault browse, map)
-│   ├── (protected)/        # Authenticated pages (submit, dashboard, research)
+│   ├── (public)/           # Public pages (vault browse, map, learning hub)
+│   ├── (protected)/        # Authenticated pages (submit, dashboard, research, create course)
 │   └── api/                # API routes + external Research API (v1)
 ├── components/
 │   ├── vault/              # Module 1 components
 │   ├── research/           # Module 2 components
+│   ├── learning/           # Module 3 components
 │   ├── map/                # Leaflet map component
 │   └── shared/             # Navigation, layout, shared UI
 ├── lib/

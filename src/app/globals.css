@@ -291,3 +291,381 @@ h1, h2, h3 { line-height: 1.2; }
 }
 .btn-primary:active { transform: translateY(0); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ─── Skip navigation ────────────────────────────────────────────────────────── */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 10px 20px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 0 0 10px 10px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-nav:focus { top: 0; }
+
+/* ─── Mobile nav overlay ─────────────────────────────────────────────────────── */
+@keyframes navSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mobile-nav-enter { animation: navSlideDown 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ─── Password strength bar ──────────────────────────────────────────────────── */
+.pw-bar {
+  height: 4px;
+  border-radius: 99px;
+  transition: width 0.35s ease, background-color 0.35s ease;
+}
+
+/* ─── Char counter ───────────────────────────────────────────────────────────── */
+.char-counter-warn  { color: #B45309; }
+.char-counter-limit { color: #991B1B; }
+
+/* ─── Kente border stripe (reusable) ─────────────────────────────────────────── */
+.kente-stripe {
+  background: repeating-linear-gradient(
+    90deg,
+    #FFD580 0px,  #FFD580 20px,
+    #FF8C42 20px, #FF8C42 40px,
+    #8B2500 40px, #8B2500 60px,
+    #5C1006 60px, #5C1006 80px
+  );
+}
+
+/* ─── Cultural ornament shimmer on hover ─────────────────────────────────────── */
+@keyframes kenteShift {
+  0%   { background-position: 0 0;   }
+  100% { background-position: 80px 0; }
+}
+.kente-stripe-animate:hover {
+  animation: kenteShift 1.8s linear infinite;
+}
+
+/* ─── Vault empty state ──────────────────────────────────────────────────────── */
+@keyframes floatGently {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(-6px); }
+}
+.float-gentle { animation: floatGently 3.5s ease-in-out infinite; }
+
+/* ─── Map accessible panel slide ────────────────────────────────────────────── */
+@keyframes slideInBottom {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.panel-slide-up { animation: slideInBottom 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ─── Reduced motion — respect user OS preference ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Keep opacity-based entrance — just remove movement */
+  .fade-up,
+  .fade-up-delay-1,
+  .fade-up-delay-2,
+  .fade-up-delay-3 {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .drawer-enter, .drawer-exit { animation: none !important; }
+  .skeleton { animation: none !important; background: #F0E8DC; }
+  .float-gentle { animation: none !important; }
+  .kente-stripe-animate:hover { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MODULE 2 — RESEARCH HUB  ·  Sage Green Accent System
+   Surfaces stay on the same warm parchment base as Module 1, so the two modules
+   feel like one product. The sage green replaces terracotta as the primary CTA /
+   active-state colour throughout Module 2, while keeping terracotta visible as a
+   subtle nod in section dividers and protected-record blocks.
+   Collaboration accent: dusty teal (#0D7377) — distinct from both sage and terracotta.
+═══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Research Hub primary — sage green ─────────────────────────── */
+  --r-primary:        #2D6A4F;   /* sage-800 — main CTA buttons, active borders */
+  --r-primary-mid:    #40916C;   /* sage-700 — icon fills, hover labels          */
+  --r-primary-hover:  #1B4332;   /* sage-900 — button hover state                */
+  --r-primary-light:  #F0F7F4;   /* sage-50 tint — selected card bg, icon box bg */
+  --r-primary-border: #95D5B2;   /* sage-200 — icon box borders, active borders  */
+  --r-primary-muted:  #D8F3E3;   /* sage-100 — focus ring fill                   */
+
+  /* ── Collaboration accent — dusty teal ────────────────────────── */
+  --r-teal:           #0D7377;
+  --r-teal-mid:       #0F8F94;
+  --r-teal-hover:     #085F63;
+  --r-teal-light:     #F0FAFA;
+  --r-teal-border:    #7FCFD2;
+
+  /* ── Shadows (sage-tinted, warm base) ─────────────────────────── */
+  --r-shadow-sm: 0 2px 8px rgba(45, 106, 79, 0.07), 0 1px 3px rgba(45, 106, 79, 0.05);
+  --r-shadow-md: 0 4px 16px rgba(45, 106, 79, 0.10), 0 2px 6px rgba(45, 106, 79, 0.06);
+  --r-shadow-lg: 0 8px 32px rgba(45, 106, 79, 0.12), 0 4px 12px rgba(45, 106, 79, 0.07);
+}
+
+/* ── Research card lift — sage ring on focus/hover ──────────────── */
+.r-card-lift {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.r-card-lift:hover {
+  box-shadow: var(--r-shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--r-primary-border);
+}
+
+/* ── Research focus ring ────────────────────────────────────────── */
+.r-focus:focus-visible {
+  outline: 2.5px solid var(--r-primary);
+  outline-offset: 3px;
+  border-radius: 5px;
+}
+
+/* ── Primary button — sage green ────────────────────────────────── */
+.btn-research {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--r-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--r-shadow-sm);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+.btn-research:hover  { background: var(--r-primary-hover); box-shadow: var(--r-shadow-md); transform: translateY(-1px); }
+.btn-research:active { transform: translateY(0); }
+.btn-research:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── Teal collaboration button ──────────────────────────────────── */
+.btn-teal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--r-teal);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(13,115,119,0.15);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.btn-teal:hover  { background: var(--r-teal-hover); transform: translateY(-1px); }
+.btn-teal:active { transform: translateY(0); }
+
+/* ── Input warm — research variant (same base, sage focus) ─────── */
+.input-research {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-base);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-research::placeholder { color: var(--text-placeholder); }
+.input-research:focus {
+  outline: none;
+  border-color: var(--r-primary);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+}
+
+/* ── Research divider ornament ──────────────────────────────────── */
+.r-divider-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #95D5B2;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.r-divider-ornament::before,
+.r-divider-ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #95D5B2, transparent);
+}
+
+/* ── Collaboration card glow ────────────────────────────────────── */
+.collab-glow { box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.15); }
+
+/* ── Stat card hover ────────────────────────────────────────────── */
+.r-stat-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.r-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--r-shadow-md);
+}
+
+/* ── prefers-reduced-motion: respect for new r-* animations ─────── */
+@media (prefers-reduced-motion: reduce) {
+  .btn-research:hover,
+  .btn-teal:hover,
+  .r-card-lift:hover,
+  .r-stat-card:hover { transform: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MODULE 3 — LEARNING HUB  ·  Warm Amber-Gold Accent System
+   Surfaces stay on the same warm parchment base. The amber-gold accent
+   (--l-primary) is distinct from Module 1 terracotta and Module 2 sage,
+   but sits naturally in the same warm earth family. Primary terracotta and
+   sage appear as subtle nods in category chips and dividers.
+═══════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Learning Hub primary — amber-gold ─────────────────────────── */
+  --l-primary:        #92400E;   /* amber-800 — main CTA, active borders  */
+  --l-primary-mid:    #B45309;   /* amber-700 — icon fills, hover labels  */
+  --l-primary-hover:  #78350F;   /* amber-900 — button hover              */
+  --l-primary-light:  #FFFBEB;   /* amber-50  — selected card bg, icon box */
+  --l-primary-border: #FDE68A;   /* amber-200 — icon borders, active      */
+  --l-primary-muted:  #FEF3C7;   /* amber-100 — focus ring fill           */
+
+  /* ── Elder Board approval — deep forest green ──────────────────── */
+  --l-elder:          #14532D;   /* green-900 — Elder Board badge text    */
+  --l-elder-bg:       #DCFCE7;   /* green-100 — badge bg                  */
+  --l-elder-border:   #86EFAC;   /* green-300 — badge border              */
+
+  /* ── Free lesson / enrolment accent ────────────────────────────── */
+  --l-free:           #0F766E;   /* teal-700 — "Free" price label         */
+  --l-free-light:     #F0FDFA;   /* teal-50  — free badge bg              */
+
+  /* ── Shadows (amber-tinted) ────────────────────────────────────── */
+  --l-shadow-sm: 0 2px 8px  rgba(146,64,14,0.07), 0 1px 3px rgba(146,64,14,0.05);
+  --l-shadow-md: 0 4px 16px rgba(146,64,14,0.10), 0 2px 6px rgba(146,64,14,0.06);
+  --l-shadow-lg: 0 8px 32px rgba(146,64,14,0.12), 0 4px 12px rgba(146,64,14,0.07);
+}
+
+/* ── Course card lift ───────────────────────────────────────────────── */
+.l-card-lift {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.l-card-lift:hover {
+  box-shadow: var(--l-shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--l-primary-border);
+}
+
+/* ── Learning Hub primary button ────────────────────────────────────── */
+.btn-learn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--l-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--l-shadow-sm);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+.btn-learn:hover  { background: var(--l-primary-hover); box-shadow: var(--l-shadow-md); transform: translateY(-1px); }
+.btn-learn:active { transform: translateY(0); }
+.btn-learn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── Elder Board Approved badge glow ────────────────────────────────── */
+@keyframes elderGlow {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(20,83,45,0.25); }
+  50%       { box-shadow: 0 0 0 6px rgba(20,83,45,0);    }
+}
+.elder-badge-pulse { animation: elderGlow 2.4s ease-in-out infinite; }
+
+/* ── Lesson progress bar ────────────────────────────────────────────── */
+.l-progress-bar {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--l-primary-muted);
+  overflow: hidden;
+}
+.l-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--l-primary), var(--l-primary-mid));
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Lesson completed check pulse ───────────────────────────────────── */
+@keyframes checkPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.lesson-check-enter { animation: checkPop 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ── Learning Hub kente stripe ──────────────────────────────────────── */
+.l-kente-stripe {
+  background: repeating-linear-gradient(
+    90deg,
+    #92400E 0px,  #92400E 20px,
+    #B45309 20px, #B45309 40px,
+    #FDE68A 40px, #FDE68A 60px,
+    #FEF3C7 60px, #FEF3C7 80px
+  );
+}
+
+/* ── Course category chip colours ───────────────────────────────────── */
+.cat-crafts    { background:#FFF7ED; color:#9A3412; border-color:#FDBA74; }
+.cat-culinary  { background:#FFFBEB; color:#92400E; border-color:#FDE68A; }
+.cat-arts      { background:#F5F3FF; color:#4C1D95; border-color:#DDD6FE; }
+.cat-building  { background:#F5F0E8; color:#6B5344; border-color:#D4C4B0; }
+.cat-ecology   { background:#F0F7F4; color:#2D6A4F; border-color:#95D5B2; }
+.cat-fusion    { background:#FDF2FA; color:#86198F; border-color:#F0ABFC; }
+
+/* ── Video player aspect wrapper ────────────────────────────────────── */
+.video-aspect {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #1A0C06;
+}
+.video-aspect iframe,
+.video-aspect video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+}
+
+/* ── Reduced motion guards ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .btn-learn:hover { transform: none !important; }
+  .l-card-lift:hover { transform: none !important; }
+  .elder-badge-pulse { animation: none !important; }
+  .l-progress-fill { transition: none !important; }
+  .lesson-check-enter { animation: none !important; opacity: 1 !important; transform: none !important; }
+}

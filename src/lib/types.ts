@@ -113,17 +113,107 @@ export interface ApiKey {
   created_at: string
 }
 
+// ─── Module 3 — Learning Hub ─────────────────────────────────────────────────
+
+export type CourseCategory =
+  | 'traditional_crafts'
+  | 'culinary_heritage'
+  | 'cultural_arts'
+  | 'natural_building'
+  | 'ecological_practices'
+  | 'modern_fusion'
+
+export type SkillLevel = 'beginner' | 'intermediate' | 'advanced'
+
+export type CourseStatus =
+  | 'draft'
+  | 'pending_review'
+  | 'approved'
+  | 'rejected'
+
+export type LessonContentType = 'video' | 'image_gallery' | 'text'
+
+export interface Course {
+  id: string
+  title: string
+  subtitle: string | null
+  description: string | null
+  category: CourseCategory
+  skill_level: SkillLevel
+  language: Language
+  creator_id: string
+  cover_image_url: string | null
+  preview_video_url: string | null
+  price_bwp: number
+  status: CourseStatus
+  rejection_note: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  enrolment_count: number
+  rating_avg: number
+  sha256_hash: string
+  created_at: string
+  updated_at: string
+  // Joined
+  profiles?: Pick<Profile, 'full_name' | 'community'>
+  lessons?: Lesson[]
+}
+
+export interface Lesson {
+  id: string
+  course_id: string
+  title: string
+  description: string | null
+  content_type: LessonContentType
+  video_url: string | null
+  image_urls: string[] | null
+  text_content: string | null
+  materials_list: string[] | null
+  duration_mins: number | null
+  sort_order: number
+  is_free_preview: boolean
+  created_at: string
+}
+
+export interface CourseEnrolment {
+  id: string
+  course_id: string
+  learner_id: string
+  enrolled_at: string
+  completed_lesson_ids: string[]
+  completed_at: string | null
+}
+
+export interface MediaItem {
+  id: string
+  title: string
+  description: string | null
+  category: CourseCategory | null
+  content_type: 'video' | 'image_gallery'
+  video_url: string | null
+  image_urls: string[] | null
+  creator_id: string
+  view_count: number
+  created_at: string
+  // Joined
+  profiles?: Pick<Profile, 'full_name' | 'community'>
+}
+
 // ─── Supabase Database schema type map ───────────────────────────────────────
 export type Database = {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile> }
-      knowledge_entries: { Row: KnowledgeEntry; Insert: Partial<KnowledgeEntry>; Update: Partial<KnowledgeEntry> }
-      access_requests: { Row: AccessRequest; Insert: Partial<AccessRequest>; Update: Partial<AccessRequest> }
-      research_listings: { Row: ResearchListing; Insert: Partial<ResearchListing>; Update: Partial<ResearchListing> }
-      research_collaborators: { Row: ResearchCollaborator; Insert: Partial<ResearchCollaborator>; Update: Partial<ResearchCollaborator> }
-      audit_logs: { Row: AuditLog; Insert: Partial<AuditLog>; Update: Partial<AuditLog> }
-      api_keys: { Row: ApiKey; Insert: Partial<ApiKey>; Update: Partial<ApiKey> }
+      profiles:               { Row: Profile;               Insert: Partial<Profile>;               Update: Partial<Profile>               }
+      knowledge_entries:      { Row: KnowledgeEntry;        Insert: Partial<KnowledgeEntry>;        Update: Partial<KnowledgeEntry>        }
+      access_requests:        { Row: AccessRequest;         Insert: Partial<AccessRequest>;         Update: Partial<AccessRequest>         }
+      research_listings:      { Row: ResearchListing;       Insert: Partial<ResearchListing>;       Update: Partial<ResearchListing>       }
+      research_collaborators: { Row: ResearchCollaborator;  Insert: Partial<ResearchCollaborator>;  Update: Partial<ResearchCollaborator>  }
+      audit_logs:             { Row: AuditLog;              Insert: Partial<AuditLog>;              Update: Partial<AuditLog>              }
+      api_keys:               { Row: ApiKey;                Insert: Partial<ApiKey>;                Update: Partial<ApiKey>                }
+      courses:                { Row: Course;                Insert: Partial<Course>;                Update: Partial<Course>                }
+      lessons:                { Row: Lesson;                Insert: Partial<Lesson>;                Update: Partial<Lesson>                }
+      course_enrolments:      { Row: CourseEnrolment;       Insert: Partial<CourseEnrolment>;       Update: Partial<CourseEnrolment>       }
+      media_items:            { Row: MediaItem;             Insert: Partial<MediaItem>;             Update: Partial<MediaItem>             }
     }
   }
 }

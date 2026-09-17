@@ -41,17 +41,19 @@ Given the 2-day hackathon constraint, the following stack was selected for **max
 ┌─────────────────────────────────────────────────────────┐
 │                    CLIENT LAYER                          │
 │         Next.js 14 App Router (React)                   │
-│   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│   │  Module 1    │  │  Module 2    │  │   Shared     │ │
-│   │  Knowledge   │  │  Research    │  │   Auth/UI    │ │
-│   │  Vault UI    │  │  Hub UI      │  │   Components │ │
-│   └──────────────┘  └──────────────┘  └──────────────┘ │
-│         │                  │                  │          │
+│   ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌───┐ │
+│   │  Module 1  │  │  Module 2  │  │  Module 3  │  │Shr│ │
+│   │  Knowledge │  │  Research  │  │  Learning  │  │ ed│ │
+│   │  Vault UI  │  │  Hub UI    │  │  Hub UI    │  │UI │ │
+│   └────────────┘  └────────────┘  └────────────┘  └───┘ │
+│         │                  │              │          │   │
 │   ┌─────────────────────────────────────────────────┐   │
 │   │           Next.js API Routes (/api/*)            │   │
 │   │  - /api/knowledge  - /api/research               │   │
 │   │  - /api/map        - /api/licensing              │   │
 │   │  - /api/hash       - /api/audit                  │   │
+│   │  - /api/courses    - /api/lessons                │   │
+│   │  - /api/enrollments                              │   │
 │   └─────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
                           │
@@ -62,9 +64,9 @@ Given the 2-day hackathon constraint, the following stack was selected for **max
 │  ┌────────────┐  ┌────────────┐  ┌────────────────────┐ │
 │  │ PostgreSQL │  │  Supabase  │  │  Supabase Storage  │ │
 │  │ + PostGIS  │  │    Auth    │  │  (Docs/Images/     │ │
-│  │ + RLS      │  │  (JWT)     │  │   Audio Assets)    │ │
-│  └────────────┘  └────────────┘  └────────────────────┘ │
-│  ┌────────────┐  ┌────────────┐                          │
+│  │ + RLS      │  │  (JWT)     │  │   Video URLs/      │ │
+│  └────────────┘  └────────────┘  │   Course Media)    │ │
+│  ┌────────────┐  ┌────────────┐  └────────────────────┘ │
 │  │ Realtime   │  │   Edge     │                          │
 │  │ (Collab)   │  │ Functions  │                          │
 │  └────────────┘  └────────────┘                          │
@@ -186,6 +188,135 @@ CREATE TABLE api_keys (
 );
 ```
 
+### 3.3 Module 3 Tables — Learning Hub
+
+```sql
+-- Courses (Module 3)
+-- A course is a structured collection of lessons created by a content creator.
+-- Must be approved by the Elder Board before it is publicly visible.
+CREATE TABLE courses (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title             TEXT NOT NULL,
+  subtitle          TEXT,
+  description       TEXT,
+  category          TEXT CHECK (category IN (
+                      'traditional_crafts','culinary_heritage',
+                      'cultural_arts','natural_building',
+                      'ecological_practices','modern_fusion'
+                    )),
+  skill_level       TEXT CHECK (skill_level IN ('beginner','intermediate','advanced'))
+                      DEFAULT 'beginner',
+  language          TEXT CHECK (language IN ('en','tn')) DEFAULT 'en',
+  creator_id        UUID REFERENCES profiles(id),
+  cover_image_url   TEXT,
+  preview_video_url TEXT,                   -- Short teaser clip, free to view
+  price_bwp         DECIMAL(10,2) DEFAULT 0, -- 0 = free
+  status            TEXT CHECK (status IN (
+                      'draft','pending_review','approved','rejected'
+                    )) DEFAULT 'draft',
+  rejection_note    TEXT,                   -- Elder Board feedback if rejected
+  reviewed_by       UUID REFERENCES profiles(id), -- Elder who approved/rejected
+  reviewed_at       TIMESTAMPTZ,
+  enrolment_count   INTEGER DEFAULT 0,
+  rating_avg        DECIMAL(3,2) DEFAULT 0,
+  sha256_hash       TEXT NOT NULL,          -- Tamper-proof record of course syllabus
+  created_at        TIMESTAMPTZ DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Lessons (belong to a course, ordered)
+CREATE TABLE lessons (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  course_id       UUID REFERENCES courses(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  description     TEXT,
+  content_type    TEXT CHECK (content_type IN ('video','image_gallery','text'))
+                    DEFAULT 'video',
+  video_url       TEXT,                     -- External URL (YouTube embed for prototype)
+  image_urls      TEXT[],                   -- Array of image URLs for gallery lessons
+  text_content    TEXT,                     -- Markdown/plain text for text lessons
+  materials_list  TEXT[],                   -- e.g. ['Mokola palm fronds','Natural dye']
+  duration_mins   INTEGER,                  -- Estimated lesson duration
+  sort_order      INTEGER NOT NULL DEFAULT 0,
+  is_free_preview BOOLEAN DEFAULT FALSE,    -- First lesson often free for paid courses
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Course Enrolments (tracks which users enrolled and their progress)
+CREATE TABLE course_enrolments (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  course_id           UUID REFERENCES courses(id),
+  learner_id          UUID REFERENCES profiles(id),
+  enrolled_at         TIMESTAMPTZ DEFAULT NOW(),
+  completed_lesson_ids UUID[],              -- Array of completed lesson IDs
+  completed_at        TIMESTAMPTZ,          -- Set when all lessons completed
+  UNIQUE(course_id, learner_id)
+);
+
+-- Media Items (standalone video/image demos, not part of a course)
+CREATE TABLE media_items (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title           TEXT NOT NULL,
+  description     TEXT,
+  category        TEXT,                     -- Same category list as courses
+  content_type    TEXT CHECK (content_type IN ('video','image_gallery')),
+  video_url       TEXT,
+  image_urls      TEXT[],
+  creator_id      UUID REFERENCES profiles(id),
+  view_count      INTEGER DEFAULT 0,
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 3.4 Module 3 RLS Policies
+
+```sql
+-- Only approved courses are visible to the public
+ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "approved_courses_public" ON courses
+  FOR SELECT USING (status = 'approved');
+
+-- Creators can see their own courses at any status
+CREATE POLICY "creator_sees_own_courses" ON courses
+  FOR SELECT USING (creator_id = auth.uid());
+
+-- Elders and admins can see all courses (for review)
+CREATE POLICY "elder_admin_sees_all_courses" ON courses
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role IN ('admin','elder')
+    )
+  );
+
+-- Lessons: visible if enrolled or course is free or lesson is free_preview
+ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "free_preview_lessons_public" ON lessons
+  FOR SELECT USING (is_free_preview = TRUE);
+
+CREATE POLICY "enrolled_lessons_visible" ON lessons
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM course_enrolments ce
+      JOIN courses c ON c.id = ce.course_id
+      WHERE ce.course_id = lessons.course_id
+        AND ce.learner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "free_course_lessons_visible" ON lessons
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM courses c
+      WHERE c.id = lessons.course_id
+        AND c.price_bwp = 0
+        AND c.status = 'approved'
+    )
+  );
+```
+
 ### 3.2 Row-Level Security Policies (Key Policies)
 
 ```sql
@@ -244,7 +375,13 @@ poloko/
 │   │   ├── vault/
 │   │   │   ├── page.tsx          # Knowledge search & browse
 │   │   │   └── [id]/page.tsx     # Knowledge entry detail
-│   │   └── map/page.tsx          # Interactive resource map
+│   │   ├── map/page.tsx          # Interactive resource map
+│   │   └── learn/                # Module 3 — Learning Hub (public)
+│   │       ├── page.tsx          # Course catalogue + media gallery
+│   │       └── [courseId]/
+│   │           ├── page.tsx      # Course detail (public — pre-enrolment)
+│   │           └── lesson/
+│   │               └── [lessonId]/page.tsx  # Lesson view (enrolled learners)
 │   ├── (protected)/
 │   │   ├── submit/page.tsx       # Submit knowledge entry
 │   │   ├── dashboard/page.tsx    # User dashboard
@@ -254,13 +391,22 @@ poloko/
 │   │   │   ├── new/page.tsx      # Publish new research
 │   │   │   └── collaborate/[id]/page.tsx
 │   │   ├── access-requests/page.tsx
-│   │   └── audit/page.tsx        # Attribution audit log
+│   │   ├── audit/page.tsx        # Attribution audit log
+│   │   └── create/               # Module 3 — creator tools (protected)
+│   │       ├── page.tsx          # My courses dashboard
+│   │       ├── new/page.tsx      # Create new course
+│   │       └── [courseId]/
+│   │           ├── edit/page.tsx         # Edit course details
+│   │           └── lessons/new/page.tsx  # Add lesson to course
 │   ├── api/
 │   │   ├── knowledge/route.ts
 │   │   ├── research/route.ts
 │   │   ├── hash/route.ts         # SHA-256 hash generation
 │   │   ├── access/route.ts
 │   │   ├── audit/route.ts
+│   │   ├── courses/route.ts      # Module 3 — course CRUD
+│   │   ├── lessons/route.ts      # Module 3 — lesson CRUD
+│   │   ├── enrolments/route.ts   # Module 3 — enrol in course
 │   │   └── v1/                   # External Research API
 │   │       └── datasets/route.ts
 │   └── layout.tsx
@@ -276,6 +422,17 @@ poloko/
 │   │   ├── LicenseSelector.tsx
 │   │   ├── CollaboratorPanel.tsx
 │   │   └── AuditLogTable.tsx
+│   ├── learning/                 # Module 3 components
+│   │   ├── CourseCard.tsx        # Catalogue grid card
+│   │   ├── CourseCatalogue.tsx   # Filterable course grid
+│   │   ├── CourseHero.tsx        # Course detail hero section
+│   │   ├── LessonList.tsx        # Ordered lesson sidebar/list
+│   │   ├── LessonPlayer.tsx      # Video + image gallery player
+│   │   ├── ElderApprovalBadge.tsx# "Elder Board Approved" badge
+│   │   ├── EnrolButton.tsx       # Enrol / Start course CTA
+│   │   ├── ProgressTracker.tsx   # Lesson completion progress
+│   │   ├── MediaGallery.tsx      # Standalone media item grid
+│   │   └── CreatorProfile.tsx    # Creator bio card
 │   ├── map/
 │   │   └── ResourceMap.tsx       # Leaflet.js map component
 │   └── shared/
@@ -289,7 +446,7 @@ poloko/
 │   ├── hash.ts                   # SHA-256 utility
 │   ├── types.ts                  # TypeScript interfaces
 │   └── constants.ts
-├── docs/                         # Project documentation
+├── docs/
 │   ├── SRD.md
 │   ├── TECHNICAL_ARCHITECTURE.md
 │   └── API_REFERENCE.md
@@ -379,25 +536,54 @@ Developer pushes to GitHub
 
 ---
 
-## 9. Hackathon Prototype Scope (48-hour Build Plan)
+## 9. Hackathon Prototype Scope (1-Day Sprint Plan)
 
-### Day 1 (Hours 0–24)
-| # | Feature | Module |
-|---|---|---|
-| 1 | Project scaffold + Supabase setup + Auth | Shared |
-| 2 | Database schema + RLS policies | Shared |
-| 3 | Knowledge submission form + SHA-256 hashing | Module 1 |
-| 4 | Knowledge vault browse + search page | Module 1 |
-| 5 | Interactive map with OpenStreetMap + Leaflet | Module 1 |
+> **Strategy:** Build the learner-facing experience for Module 3 — the course catalogue, course detail page, and lesson view — using seed/mock data so it demos beautifully even without a full creator flow. Elder approval badge is displayed as static UI for prototype.
 
-### Day 2 (Hours 24–48)
-| # | Feature | Module |
-|---|---|---|
-| 6 | Access tiers + access request flow | Module 1 |
-| 7 | Research listing publish + license selector | Module 2 |
-| 8 | Research marketplace browse page | Module 2 |
-| 9 | Audit log / attribution tracking dashboard | Module 2 |
-| 10 | Dashboard + polish + demo data seed | Shared |
+### Hour 0–3 — Foundation
+| # | Task |
+|---|---|
+| 1 | Project scaffold + Supabase setup + Auth |
+| 2 | Database schema (all 3 modules) + RLS policies |
+| 3 | Seed data: 4–6 courses with lessons, creators, cover images |
+
+### Hour 3–8 — Module 1 Core
+| # | Task |
+|---|---|
+| 4 | Knowledge submission form + SHA-256 hashing |
+| 5 | Knowledge vault browse + search page |
+| 6 | Interactive map + access tier system |
+
+### Hour 8–14 — Module 3 Learner UI (Demo Priority)
+| # | Task |
+|---|---|
+| 7 | Course catalogue page — filterable grid with `CourseCard` components |
+| 8 | Course detail page — hero, Elder approval badge, lesson list, enrol button |
+| 9 | Lesson view page — video embed/image gallery, text notes, materials list, progress |
+| 10 | Media gallery — standalone demo videos/images |
+
+### Hour 14–18 — Module 2 Core
+| # | Task |
+|---|---|
+| 11 | Research listing publish + license selector |
+| 12 | Research marketplace browse page |
+| 13 | Audit log / attribution tracking dashboard |
+
+### Hour 18–24 — Polish & Demo Prep
+| # | Task |
+|---|---|
+| 14 | Dashboard (all 3 modules surfaced) |
+| 15 | Landing page with all 3 modules showcased |
+| 16 | Navbar updated with Learning Hub link |
+| 17 | Seed more demo data for realistic demo |
+| 18 | Final QA pass + Vercel deployment |
+
+### Module 3 Demo Flow (What Judges Will See)
+1. Land on `/learn` — warm course catalogue with 4–6 Elder-approved traditional skills courses
+2. Click *"Traditional Tswana Basket Weaving"* → course detail page with Elder Board Approved badge, creator bio, lesson list, BWP price, Enrol button
+3. Click *"Preview First Lesson Free"* → lesson view with video, step-by-step text, materials list
+4. Show *"Decoration in Modern Style Using Traditional Items"* course — demonstrates the modern fusion category
+5. Show the Elder Board Approved badge and explain the approval flow
 
 ---
 

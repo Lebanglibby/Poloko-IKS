@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   Leaf, BookOpen, Map, FlaskConical, LayoutDashboard,
   LogOut, KeyRound, Bell, Search, Globe, ChevronDown,
-  Menu, X,
+  Menu, X, GraduationCap,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -21,11 +21,12 @@ const ROLE_LABELS: Record<string, string> = {
 
 /* ─── Nav links ──────────────────────────────────────────────────────────────── */
 const NAV_LINKS = [
-  { href: '/vault',     label: { en: 'Knowledge Vault',  tn: 'Letlole la Kitso'     }, icon: BookOpen      },
-  { href: '/map',       label: { en: 'Resource Map',     tn: 'Mmepameno'            }, icon: Map           },
-  { href: '/research',  label: { en: 'Research Hub',     tn: 'Setsi sa Dipatlisiso' }, icon: FlaskConical  },
-  { href: '/dashboard', label: { en: 'My Dashboard',     tn: 'Laesense ya me'       }, icon: LayoutDashboard, authRequired: true },
-  { href: '/api-keys',  label: { en: 'API Keys',         tn: 'Dikirii tsa API'      }, icon: KeyRound,       roles: ['researcher', 'admin'] },
+  { href: '/vault',     label: { en: 'Knowledge Vault',  tn: 'Letlole la Kitso'     }, icon: BookOpen,       module: 1 },
+  { href: '/map',       label: { en: 'Resource Map',     tn: 'Mmepameno'            }, icon: Map,            module: 1 },
+  { href: '/research',  label: { en: 'Research Hub',     tn: 'Setsi sa Dipatlisiso' }, icon: FlaskConical,   module: 2 },
+  { href: '/learn',     label: { en: 'Learning Hub',     tn: 'Lefelo la Thuto'      }, icon: GraduationCap,  module: 3 },
+  { href: '/dashboard', label: { en: 'My Dashboard',     tn: 'Laesense ya me'       }, icon: LayoutDashboard, authRequired: true, module: 0 },
+  { href: '/api-keys',  label: { en: 'API Keys',         tn: 'Dikirii tsa API'      }, icon: KeyRound,        roles: ['researcher', 'admin'], module: 2 },
 ]
 
 interface NavbarProps {
@@ -108,10 +109,17 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-1 flex-1 mx-2" role="list">
-            {NAV_LINKS.map(({ href, label, icon: Icon, authRequired, roles }) => {
+            {NAV_LINKS.map(({ href, label, icon: Icon, authRequired, roles, module: mod }) => {
               if (authRequired && !userRole) return null
               if (roles && (!userRole || !roles.includes(userRole))) return null
               const active = pathname.startsWith(href)
+
+              /* Per-module active accent colours */
+              const activeClasses =
+                mod === 2 ? 'bg-[#F0F7F4] text-[#2D6A4F] font-semibold' :
+                mod === 3 ? 'bg-[#FFFBEB] text-[#92400E] font-semibold' :
+                            'bg-[#FEF2E8] text-[#9A3412] font-semibold'
+
               return (
                 <Link
                   key={href}
@@ -120,7 +128,7 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
                   className={cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                     active
-                      ? 'bg-[#FEF2E8] text-[#9A3412] font-semibold'
+                      ? activeClasses
                       : 'text-[#4B5563] hover:text-[#9A3412] hover:bg-[#FEF9F0]'
                   )}
                   aria-current={active ? 'page' : undefined}
@@ -220,9 +228,10 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
                       </p>
                     </div>
                     {[
-                      { href: '/dashboard', label: 'My Dashboard',  icon: LayoutDashboard },
-                      { href: '/submit',    label: 'Submit Knowledge', icon: Leaf          },
-                      { href: '/audit',     label: 'Audit Log',     icon: KeyRound        },
+                      { href: '/dashboard', label: 'My Dashboard',   icon: LayoutDashboard },
+                      { href: '/submit',    label: 'Submit Knowledge', icon: Leaf            },
+                      { href: '/create',    label: 'My Courses',       icon: GraduationCap   },
+                      { href: '/audit',     label: 'Audit Log',        icon: KeyRound        },
                     ].map(({ href, label, icon: Icon }) => (
                       <Link
                         key={href}
@@ -311,20 +320,21 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
               {/* Category chips */}
               <div className="flex flex-wrap gap-2 mt-3 justify-center" role="group" aria-label="Browse by category">
                 {[
-                  { en: 'Medicinal Plants', tn: 'Dimela tsa Kalafi' },
-                  { en: 'Traditional Practices', tn: 'Ditlwaelo' },
-                  { en: 'Conservation', tn: 'Bolokosetso' },
-                  { en: 'Cultural Stories', tn: 'Ditso tsa Setso' },
-                  { en: 'Open for Collaboration', tn: 'Tirisano' },
+                  { en: 'Medicinal Plants',        tn: 'Dimela tsa Kalafi',  href: '/vault?category=flora_medicinal'      },
+                  { en: 'Traditional Practices',   tn: 'Ditlwaelo',          href: '/vault?category=traditional_practice' },
+                  { en: 'Conservation',            tn: 'Bolokosetso',        href: '/vault?category=conservation'         },
+                  { en: 'Cultural Stories',        tn: 'Ditso tsa Setso',    href: '/vault?category=cultural_narrative'   },
+                  { en: 'Open for Collaboration',  tn: 'Tirisano',           href: '/research?status=open_for_collaboration' },
+                  { en: 'Browse Courses',          tn: 'Dikosi',             href: '/learn'                               },
+                  { en: 'Basket Weaving',          tn: 'Go Loka Ditlhako',   href: '/learn?category=traditional_crafts'   },
                 ].map(chip => (
-                  <button
+                  <a
                     key={chip.en}
-                    type="button"
-                    onClick={() => setSearchVal(chip[lang])}
+                    href={chip.href}
                     className="px-3.5 py-1.5 rounded-full text-sm bg-white border border-[#E8DDD0] text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412] hover:bg-[#FEF9F0] transition-colors"
                   >
                     {chip[lang]}
-                  </button>
+                  </a>
                 ))}
               </div>
             </form>
@@ -334,10 +344,16 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
         {/* ── Mobile menu ─────────────────────────────────────────────────── */}
         {menuOpen && (
           <div className="md:hidden border-t border-[#E8DDD0] bg-white px-4 py-3 space-y-1" role="menu">
-            {NAV_LINKS.map(({ href, label, icon: Icon, authRequired, roles }) => {
+            {NAV_LINKS.map(({ href, label, icon: Icon, authRequired, roles, module: mod }) => {
               if (authRequired && !userRole) return null
               if (roles && (!userRole || !roles.includes(userRole))) return null
               const active = pathname.startsWith(href)
+
+              const activeClasses =
+                mod === 2 ? 'bg-[#F0F7F4] text-[#2D6A4F]' :
+                mod === 3 ? 'bg-[#FFFBEB] text-[#92400E]' :
+                            'bg-[#FEF2E8] text-[#9A3412]'
+
               return (
                 <Link
                   key={href}
@@ -345,9 +361,7 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
                   role="menuitem"
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors',
-                    active
-                      ? 'bg-[#FEF2E8] text-[#9A3412]'
-                      : 'text-[#4B5563] hover:bg-[#FEF9F0] hover:text-[#9A3412]'
+                    active ? activeClasses : 'text-[#4B5563] hover:bg-[#FEF9F0] hover:text-[#9A3412]'
                   )}
                 >
                   <Icon className="h-5 w-5" aria-hidden="true" />
