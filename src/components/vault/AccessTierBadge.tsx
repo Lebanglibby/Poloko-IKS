@@ -1,37 +1,52 @@
 import { cn } from '@/lib/utils'
 import type { AccessTier } from '@/lib/types'
-import { Shield, Lock, Globe } from 'lucide-react'
+import { Globe, Lock, Shield, CheckCircle2 } from 'lucide-react'
 
-/* ─── Tier visual config ─────────────────────────────────────────────────────── */
+/* ─── Tier config — plain language, warm colours ─────────────────────────────── */
 const TIER_CONFIG = {
   public: {
-    label: 'Public',
-    icon: Globe,
-    badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
-    dot:   'bg-emerald-400',
-    glow:  'shadow-emerald-500/10',
+    shortLabel:  'Public',
+    longLabel:   'Public — Free Access',
+    description: 'This knowledge is freely available to everyone.',
+    icon:        Globe,
+    badge:       'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]',
+    banner:      'bg-[#F0FDF4] border-[#BBF7D0]',
+    bannerText:  'text-[#14532D]',
+    bannerDesc:  'text-[#15803D]',
+    dot:         'bg-[#15803D]',
+    iconColor:   'text-[#15803D]',
   },
   restricted: {
-    label: 'Restricted',
-    icon: Lock,
-    badge: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
-    dot:   'bg-amber-400',
-    glow:  'shadow-amber-500/10',
+    shortLabel:  'Restricted',
+    longLabel:   'Restricted — Researcher Access',
+    description: 'Verified researchers and community members may apply to view this entry.',
+    icon:        Lock,
+    badge:       'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]',
+    banner:      'bg-[#FFFBEB] border-[#FDE68A]',
+    bannerText:  'text-[#78350F]',
+    bannerDesc:  'text-[#B45309]',
+    dot:         'bg-[#B45309]',
+    iconColor:   'text-[#B45309]',
   },
   sacred: {
-    label: 'Sacred',
-    icon: Shield,
-    badge: 'bg-red-500/15 text-red-400 border-red-500/25',
-    dot:   'bg-red-400',
-    glow:  'shadow-red-500/10',
+    shortLabel:  'Sacred',
+    longLabel:   'Sacred — Community Protected',
+    description: 'This knowledge is protected under community sovereignty. Elder Board approval is required before access is granted.',
+    icon:        Shield,
+    badge:       'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]',
+    banner:      'bg-[#FEF2F2] border-[#FECACA]',
+    bannerText:  'text-[#7F1D1D]',
+    bannerDesc:  'text-[#B91C1C]',
+    dot:         'bg-[#B91C1C]',
+    iconColor:   'text-[#B91C1C]',
   },
 } as const
 
 interface Props {
   tier: AccessTier
-  /** 'badge' (default): compact pill with icon
-   *  'indicator': dot + label, for sidebars / detail views
-   *  'banner': full-width warning bar */
+  /** 'badge'      — compact inline pill (default)
+   *  'indicator'  — dot + short label
+   *  'banner'     — full-width info box with description */
   variant?: 'badge' | 'indicator' | 'banner'
   className?: string
 }
@@ -42,18 +57,9 @@ export function AccessTierBadge({ tier, variant = 'badge', className }: Props) {
 
   if (variant === 'indicator') {
     return (
-      <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium', className)}>
-        <span
-          className={cn('h-1.5 w-1.5 rounded-full', conf.dot)}
-          aria-hidden="true"
-        />
-        <span className={cn(
-          tier === 'public'     ? 'text-emerald-400' :
-          tier === 'restricted' ? 'text-amber-400' :
-          'text-red-400'
-        )}>
-          {conf.label}
-        </span>
+      <span className={cn('inline-flex items-center gap-1.5 text-sm font-medium', className)}>
+        <span className={cn('h-2 w-2 rounded-full shrink-0', conf.dot)} aria-hidden="true" />
+        <span className={conf.iconColor}>{conf.shortLabel}</span>
       </span>
     )
   }
@@ -62,41 +68,28 @@ export function AccessTierBadge({ tier, variant = 'badge', className }: Props) {
     return (
       <div
         role="status"
-        aria-label={`Access tier: ${conf.label}`}
+        aria-label={`Access level: ${conf.longLabel}`}
         className={cn(
-          'w-full flex items-start gap-3 rounded-xl border px-4 py-3',
-          tier === 'public'
-            ? 'border-emerald-500/20 bg-emerald-500/5'
-            : tier === 'restricted'
-            ? 'border-amber-500/20 bg-amber-500/5'
-            : 'border-red-500/20 bg-red-500/5',
+          'w-full flex items-start gap-3 rounded-2xl border px-4 py-4',
+          conf.banner,
           className
         )}
       >
-        <Icon
-          className={cn(
-            'mt-0.5 h-4 w-4 shrink-0',
-            tier === 'public' ? 'text-emerald-400' :
-            tier === 'restricted' ? 'text-amber-400' :
-            'text-red-400'
-          )}
-          aria-hidden="true"
-        />
-        <div>
-          <p className={cn(
-            'text-sm font-semibold',
-            tier === 'public' ? 'text-emerald-300' :
-            tier === 'restricted' ? 'text-amber-300' :
-            'text-red-300'
-          )}>
-            {tier === 'public' && 'Public Access'}
-            {tier === 'restricted' && 'Restricted — Apply for Access'}
-            {tier === 'sacred' && 'Sacred — Elder Board Approval Required'}
+        <div className={cn(
+          'mt-0.5 shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
+          tier === 'public'     ? 'bg-[#DCFCE7]' :
+          tier === 'restricted' ? 'bg-[#FEF3C7]' : 'bg-[#FEE2E2]'
+        )}>
+          <Icon className={cn('h-4 w-4', conf.iconColor)} aria-hidden="true" />
+        </div>
+        <div className="flex-1">
+          <p className={cn('text-sm font-bold leading-tight', conf.bannerText)}>
+            {tier === 'public'     && '✓ Public Record — Free Access'}
+            {tier === 'restricted' && 'Restricted — Apply for Researcher Access'}
+            {tier === 'sacred'     && 'Sacred Heritage — Elder Board Approval Required'}
           </p>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {tier === 'public' && 'This entry is freely viewable and downloadable by anyone.'}
-            {tier === 'restricted' && 'Verified researchers and community members may request access with justification.'}
-            {tier === 'sacred' && 'This knowledge is protected under community sovereignty. Elder Board approval is mandatory before access is granted.'}
+          <p className={cn('text-sm mt-1 leading-relaxed', conf.bannerDesc)}>
+            {conf.description}
           </p>
         </div>
       </div>
@@ -107,16 +100,32 @@ export function AccessTierBadge({ tier, variant = 'badge', className }: Props) {
   return (
     <span
       role="status"
-      aria-label={`Access tier: ${conf.label}`}
+      aria-label={`Access level: ${conf.longLabel}`}
       className={cn(
-        'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border shadow-sm',
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border',
         conf.badge,
-        conf.glow,
         className
       )}
     >
-      <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
-      {conf.label}
+      <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      {conf.longLabel}
+    </span>
+  )
+}
+
+/* ─── Verified badge (separate, reusable) ────────────────────────────────────── */
+export function VerifiedBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold',
+        'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]',
+        className
+      )}
+      aria-label="Community verified record"
+    >
+      <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+      Verified Record
     </span>
   )
 }

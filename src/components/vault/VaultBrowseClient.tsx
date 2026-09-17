@@ -3,9 +3,8 @@
 import { useState, useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Search, SlidersHorizontal, X, Leaf,
-  ChevronLeft, ChevronRight, LayoutList, Map as MapIcon,
-  Globe, Lock, Shield,
+  Search, X, Leaf, ChevronLeft, ChevronRight,
+  LayoutList, Map as MapIcon, Globe, Lock, Shield, SlidersHorizontal,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { KnowledgeCard } from '@/components/vault/KnowledgeCard'
@@ -16,47 +15,59 @@ import type { KnowledgeEntry, KnowledgeCategory, AccessTier } from '@/lib/types'
 /* ─── Skeleton ───────────────────────────────────────────────────────────────── */
 function CardSkeleton() {
   return (
-    <div className="rounded-xl border border-slate-700/60 p-4 space-y-3">
-      <div className="flex gap-3">
-        <div className="skeleton h-8 w-8 rounded-lg shrink-0" />
-        <div className="flex-1 space-y-2">
-          <div className="skeleton h-4 w-3/4 rounded" />
-          <div className="skeleton h-3 w-1/3 rounded" />
+    <div className="bg-white rounded-2xl border border-[#E8DDD0] overflow-hidden">
+      <div className="h-1.5 skeleton" />
+      <div className="p-5 space-y-3">
+        <div className="flex gap-3">
+          <div className="skeleton h-10 w-10 rounded-xl shrink-0" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="skeleton h-4 w-3/4 rounded" />
+            <div className="skeleton h-3 w-1/3 rounded" />
+          </div>
         </div>
-        <div className="skeleton h-5 w-16 rounded-full shrink-0" />
-      </div>
-      <div className="skeleton h-3 w-full rounded ml-11" />
-      <div className="skeleton h-3 w-2/3 rounded ml-11" />
-      <div className="border-t border-slate-700/40 pt-3 flex gap-2">
-        <div className="skeleton h-5 w-20 rounded-md" />
-        <div className="skeleton h-4 w-16 rounded" />
+        <div className="skeleton h-3 w-full rounded ml-[52px]" />
+        <div className="skeleton h-3 w-2/3 rounded ml-[52px]" />
+        <div className="skeleton h-6 w-32 rounded-full ml-[52px]" />
+        <div className="border-t border-[#F3F0EB] pt-3 flex gap-3">
+          <div className="skeleton h-5 w-24 rounded-full" />
+          <div className="skeleton h-5 w-20 rounded-full" />
+        </div>
       </div>
     </div>
   )
 }
 
-/* ─── Filter chip ────────────────────────────────────────────────────────────── */
-function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+/* ─── Category quick-browse chips ────────────────────────────────────────────── */
+const CATEGORY_CHIPS = [
+  { value: 'flora_medicinal',      label: '🌿 Medicinal Plants'   },
+  { value: 'traditional_practice', label: '🏺 Traditional Practices' },
+  { value: 'conservation',         label: '🌍 Conservation'       },
+  { value: 'cultural_narrative',   label: '📖 Cultural Stories'   },
+  { value: 'resource_location',    label: '📍 Resource Locations' },
+] as const
+
+/* ─── Tier quick-filter buttons ──────────────────────────────────────────────── */
+const TIER_CHIPS = [
+  { value: 'public',     label: 'Public',     icon: Globe,   active: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]',  inactive: 'text-[#4B5563] border-[#E8DDD0] hover:border-[#15803D] hover:text-[#15803D]' },
+  { value: 'restricted', label: 'Restricted', icon: Lock,    active: 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]',  inactive: 'text-[#4B5563] border-[#E8DDD0] hover:border-[#B45309] hover:text-[#B45309]' },
+  { value: 'sacred',     label: 'Sacred',     icon: Shield,  active: 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]',  inactive: 'text-[#4B5563] border-[#E8DDD0] hover:border-[#B91C1C] hover:text-[#B91C1C]' },
+] as const
+
+/* ─── Active filter chip ─────────────────────────────────────────────────────── */
+function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/15 border border-emerald-500/25 text-emerald-400">
+    <span className="inline-flex items-center gap-1 pl-3 pr-2 py-1 rounded-full text-sm font-medium bg-[#FEF2E8] text-[#9A3412] border border-[#FDBA74]">
       {label}
       <button
         onClick={onRemove}
         aria-label={`Remove filter: ${label}`}
-        className="rounded-full p-0.5 hover:bg-emerald-500/20 transition-colors"
+        className="rounded-full p-0.5 hover:bg-[#FDBA74]/40 transition-colors"
       >
-        <X className="h-2.5 w-2.5" aria-hidden="true" />
+        <X className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
     </span>
   )
 }
-
-/* ─── Tier quick-filter buttons ──────────────────────────────────────────────── */
-const TIER_FILTERS: { tier: AccessTier; label: string; icon: typeof Globe; color: string }[] = [
-  { tier: 'public',     label: 'Public',     icon: Globe,   color: 'text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10' },
-  { tier: 'restricted', label: 'Restricted', icon: Lock,    color: 'text-amber-400   border-amber-500/30   hover:bg-amber-500/10'   },
-  { tier: 'sacred',     label: 'Sacred',     icon: Shield,  color: 'text-red-400     border-red-500/30     hover:bg-red-500/10'     },
-]
 
 /* ─── Props ──────────────────────────────────────────────────────────────────── */
 interface Props {
@@ -67,86 +78,68 @@ interface Props {
   totalCount: number
   totalPages: number
   currentPage: number
-  currentFilters: {
-    search?: string
-    category?: KnowledgeCategory
-    tier?: AccessTier
-  }
+  currentFilters: { search?: string; category?: KnowledgeCategory; tier?: AccessTier }
   userRole: string | null
   userId: string | null
 }
 
 /* ─── Main component ─────────────────────────────────────────────────────────── */
 export function VaultBrowseClient({
-  entries,
-  mapEntries,
-  categoryLabels,
-  error,
-  totalCount,
-  totalPages,
-  currentPage,
-  currentFilters,
-  userRole,
-  userId,
+  entries, mapEntries, categoryLabels, error,
+  totalCount, totalPages, currentPage, currentFilters,
+  userRole, userId,
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  /* Drawer state */
   const [selectedEntry, setSelectedEntry] = useState<KnowledgeEntry | null>(null)
   const [drawerOpen, setDrawerOpen]       = useState(false)
+  const [mobileView, setMobileView]       = useState<'list' | 'map'>('list')
+  const [filtersOpen, setFiltersOpen]     = useState(false)
 
-  /* Mobile view toggle */
-  const [mobileView, setMobileView] = useState<'list' | 'map'>('list')
-
-  /* Filter form state */
-  const [filtersOpen, setFiltersOpen] = useState(false)
-  const [search,      setSearch]      = useState(currentFilters.search   ?? '')
-  const [category,    setCategory]    = useState(currentFilters.category ?? '')
-  const [tier,        setTier]        = useState(currentFilters.tier     ?? '')
+  const [search,   setSearch]   = useState(currentFilters.search   ?? '')
+  const [category, setCategory] = useState(currentFilters.category ?? '')
+  const [tier,     setTier]     = useState(currentFilters.tier     ?? '')
 
   /* ── URL helpers ──────────────────────────────────────────────────────── */
-  function buildUrl(overrides: {
-    search?: string; category?: string; tier?: string; page?: number
-  } = {}) {
+  function buildUrl(o: { search?: string; category?: string; tier?: string; page?: number } = {}) {
     const qs = new URLSearchParams()
-    const s  = overrides.search   !== undefined ? overrides.search   : (currentFilters.search   ?? '')
-    const c  = overrides.category !== undefined ? overrides.category : (currentFilters.category ?? '')
-    const t  = overrides.tier     !== undefined ? overrides.tier     : (currentFilters.tier     ?? '')
-    const p  = overrides.page ?? 1
-    if (s)  qs.set('search',   s)
-    if (c)  qs.set('category', c)
-    if (t)  qs.set('tier',     t)
+    const s = o.search   !== undefined ? o.search   : (currentFilters.search   ?? '')
+    const c = o.category !== undefined ? o.category : (currentFilters.category ?? '')
+    const t = o.tier     !== undefined ? o.tier     : (currentFilters.tier     ?? '')
+    const p = o.page ?? 1
+    if (s) qs.set('search', s)
+    if (c) qs.set('category', c)
+    if (t) qs.set('tier', t)
     if (p > 1) qs.set('page', String(p))
     const q = qs.toString()
     return `/vault${q ? `?${q}` : ''}`
   }
 
-  function navigate(url: string) {
-    startTransition(() => router.push(url))
-  }
+  function navigate(url: string) { startTransition(() => router.push(url)) }
+  function clearAll() { setSearch(''); setCategory(''); setTier(''); navigate('/vault') }
+  const hasFilters = !!(currentFilters.search || currentFilters.category || currentFilters.tier)
 
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault()
     navigate(buildUrl({ search, category: category || '', tier: tier || '', page: 1 }))
   }
 
-  function clearAll() {
-    setSearch(''); setCategory(''); setTier('')
-    navigate('/vault')
+  function handleCategoryChip(val: string) {
+    const next = category === val ? '' : val
+    setCategory(next)
+    navigate(buildUrl({ category: next, page: 1 }))
   }
 
-  const hasFilters = !!(currentFilters.search || currentFilters.category || currentFilters.tier)
+  function handleTierChip(val: string) {
+    const next = tier === val ? '' : val
+    setTier(next)
+    navigate(buildUrl({ tier: next, page: 1 }))
+  }
 
-  /* ── Card interactions ────────────────────────────────────────────────── */
-  const handleSelect = useCallback((entry: KnowledgeEntry) => {
-    setSelectedEntry(entry)
-    setDrawerOpen(true)
-  }, [])
-
-  const handleClose = useCallback(() => setDrawerOpen(false), [])
-
-  const handleMapSelect = useCallback((id: string) => {
+  const handleSelect  = useCallback((entry: KnowledgeEntry) => { setSelectedEntry(entry); setDrawerOpen(true) }, [])
+  const handleClose   = useCallback(() => setDrawerOpen(false), [])
+  const handleMapSel  = useCallback((id: string) => {
     const match = entries.find(e => e.id === id)
     if (match) { setSelectedEntry(match); setDrawerOpen(true) }
   }, [entries])
@@ -154,220 +147,171 @@ export function VaultBrowseClient({
   return (
     <>
       {/* ── Filter bar ──────────────────────────────────────────────────── */}
-      <div className="border-b border-slate-700/60 bg-slate-900/80 backdrop-blur-sm px-4 sm:px-6 py-3 sticky top-14 z-30">
-        <div className="max-w-screen-xl mx-auto">
+      <div className="border-b border-[#E8DDD0] bg-white px-4 sm:px-6 py-4 sticky top-16 z-30 shadow-sm">
+        <div className="max-w-screen-xl mx-auto space-y-3">
+
+          {/* Row 1: search + controls */}
           <form onSubmit={handleSearchSubmit}>
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Search */}
-              <div className="relative flex-1 min-w-[180px]">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 pointer-events-none"
-                  aria-hidden="true"
-                />
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF] pointer-events-none" aria-hidden="true" />
                 <input
                   type="search"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search knowledge entries…"
-                  className="w-full pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[#FDFBF7] border border-[#E8DDD0] rounded-xl text-[#1F2937] placeholder-[#9CA3AF] text-sm focus:outline-none focus:border-[#9A3412] focus:ring-2 focus:ring-[#9A3412]/20 transition-all"
                   aria-label="Search knowledge entries"
                 />
               </div>
 
-              {/* Access tier quick filters */}
-              <div
-                className="hidden sm:flex items-center gap-1 border border-slate-700 rounded-lg p-0.5 bg-slate-800/60"
-                role="group"
-                aria-label="Filter by access tier"
-              >
-                <button
-                  type="button"
-                  onClick={() => { setTier(''); navigate(buildUrl({ tier: '', page: 1 })) }}
-                  className={cn(
-                    'px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors',
-                    !tier ? 'bg-slate-700 text-slate-200' : 'text-slate-500 hover:text-slate-300'
-                  )}
-                  aria-pressed={!tier}
-                >
-                  All
-                </button>
-                {TIER_FILTERS.map(({ tier: t, label, icon: Icon, color }) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => { setTier(tier === t ? '' : t); navigate(buildUrl({ tier: tier === t ? '' : t, page: 1 })) }}
-                    className={cn(
-                      'flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors border',
-                      tier === t
-                        ? cn(color, 'bg-slate-700 border-opacity-60')
-                        : cn('border-transparent text-slate-500 hover:text-slate-300', color.split(' ').filter(c => c.startsWith('hover:')).join(' '))
-                    )}
-                    aria-pressed={tier === t}
-                    aria-label={`Filter: ${label}`}
-                  >
-                    <Icon className="h-3 w-3" aria-hidden="true" />
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* More filters toggle */}
               <button
                 type="button"
                 onClick={() => setFiltersOpen(v => !v)}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors',
+                  'flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors',
                   filtersOpen
-                    ? 'bg-slate-700 border-slate-600 text-slate-200'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                    ? 'border-[#9A3412] bg-[#FEF2E8] text-[#9A3412]'
+                    : 'border-[#E8DDD0] bg-[#FDFBF7] text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412]'
                 )}
                 aria-expanded={filtersOpen}
-                aria-label="More filter options"
+                aria-label="More filters"
               >
-                <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="hidden sm:inline">More</span>
-                {hasFilters && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />}
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                <span>Filters</span>
+                {hasFilters && <span className="h-2 w-2 rounded-full bg-[#9A3412]" aria-hidden="true" />}
               </button>
 
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#9A3412] hover:bg-[#7C2D12] text-white transition-colors shadow-sm"
               >
                 Search
               </button>
 
               {hasFilters && (
-                <button
-                  type="button"
-                  onClick={clearAll}
-                  className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                  aria-label="Clear all filters"
-                >
-                  <X className="h-3.5 w-3.5" aria-hidden="true" /> Clear
+                <button type="button" onClick={clearAll} className="flex items-center gap-1 text-sm text-[#9CA3AF] hover:text-[#9A3412] transition-colors">
+                  <X className="h-4 w-4" aria-hidden="true" /> Clear all
                 </button>
               )}
 
               {/* Mobile list/map toggle */}
-              <div className="ml-auto flex lg:hidden items-center rounded-lg border border-slate-700 overflow-hidden">
-                {[
-                  { id: 'list', Icon: LayoutList, label: 'List view' },
-                  { id: 'map',  Icon: MapIcon,    label: 'Map view'  },
-                ].map(({ id, Icon, label }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setMobileView(id as 'list' | 'map')}
-                    className={cn(
-                      'px-2.5 py-1.5 text-xs transition-colors',
-                      mobileView === id ? 'bg-slate-700 text-slate-100' : 'text-slate-500 hover:text-slate-300'
-                    )}
-                    aria-label={label}
-                    aria-pressed={mobileView === id}
-                  >
-                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+              <div className="ml-auto lg:hidden flex rounded-xl border border-[#E8DDD0] overflow-hidden">
+                {([['list', LayoutList, 'List view'], ['map', MapIcon, 'Map view']] as const).map(([id, Icon, label]) => (
+                  <button key={id} type="button" onClick={() => setMobileView(id)}
+                    className={cn('px-3 py-2 transition-colors', mobileView === id ? 'bg-[#FEF2E8] text-[#9A3412]' : 'text-[#9CA3AF] hover:text-[#4B5563]')}
+                    aria-label={label} aria-pressed={mobileView === id}>
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Expanded: category filter */}
-            {filtersOpen && (
-              <div className="mt-3 pt-3 border-t border-slate-700/40 flex flex-wrap gap-2 items-center">
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                  aria-label="Filter by category"
+            {/* Row 2: category chips */}
+            <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Browse by category">
+              {CATEGORY_CHIPS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => handleCategoryChip(value)}
+                  className={cn(
+                    'px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all',
+                    category === value
+                      ? 'bg-[#9A3412] text-white border-[#9A3412] shadow-sm'
+                      : 'bg-white text-[#4B5563] border-[#E8DDD0] hover:border-[#9A3412] hover:text-[#9A3412] hover:bg-[#FEF9F0]'
+                  )}
+                  aria-pressed={category === value}
                 >
-                  <option value="">All Categories</option>
-                  {(Object.entries(categoryLabels) as [KnowledgeCategory, string][]).map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
-                  ))}
-                </select>
+                  {label}
+                </button>
+              ))}
+            </div>
 
-                {/* Tier select (mobile fallback) */}
-                <select
-                  value={tier}
-                  onChange={e => setTier(e.target.value)}
-                  className="sm:hidden bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all"
-                  aria-label="Filter by access tier"
-                >
-                  <option value="">All Tiers</option>
-                  <option value="public">Public</option>
-                  <option value="restricted">Restricted</option>
-                  <option value="sacred">Sacred</option>
-                </select>
+            {/* Expanded: tier filter + more */}
+            {filtersOpen && (
+              <div className="mt-3 pt-3 border-t border-[#F3F0EB] space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide mb-2">Access Level</p>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by access level">
+                    <button
+                      type="button"
+                      onClick={() => handleTierChip('')}
+                      className={cn('px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all',
+                        !tier ? 'bg-[#1F2937] text-white border-[#1F2937]' : 'bg-white text-[#4B5563] border-[#E8DDD0] hover:border-[#1F2937]'
+                      )}
+                      aria-pressed={!tier}
+                    >
+                      All Levels
+                    </button>
+                    {TIER_CHIPS.map(({ value, label, icon: Icon, active, inactive }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => handleTierChip(value)}
+                        className={cn('flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all bg-white', tier === value ? active : inactive)}
+                        aria-pressed={tier === value}
+                      >
+                        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Active chip row */}
+            {/* Active filter pills */}
             {hasFilters && (
-              <div className="flex flex-wrap gap-1.5 mt-2" role="group" aria-label="Active filters">
-                {currentFilters.search   && <FilterChip label={`"${currentFilters.search}"`}          onRemove={() => navigate(buildUrl({ search:   '', page: 1 }))} />}
-                {currentFilters.category && <FilterChip label={categoryLabels[currentFilters.category] ?? currentFilters.category} onRemove={() => navigate(buildUrl({ category: '', page: 1 }))} />}
-                {currentFilters.tier     && <FilterChip label={currentFilters.tier.charAt(0).toUpperCase() + currentFilters.tier.slice(1)} onRemove={() => navigate(buildUrl({ tier: '', page: 1 }))} />}
+              <div className="flex flex-wrap gap-2 mt-2" role="group" aria-label="Active filters">
+                {currentFilters.search   && <FilterPill label={`"${currentFilters.search}"`} onRemove={() => navigate(buildUrl({ search: '', page: 1 }))} />}
+                {currentFilters.category && <FilterPill label={categoryLabels[currentFilters.category] ?? currentFilters.category} onRemove={() => navigate(buildUrl({ category: '', page: 1 }))} />}
+                {currentFilters.tier     && <FilterPill label={currentFilters.tier.charAt(0).toUpperCase() + currentFilters.tier.slice(1)} onRemove={() => navigate(buildUrl({ tier: '', page: 1 }))} />}
               </div>
             )}
           </form>
         </div>
       </div>
 
-      {/* ── Split-screen body ────────────────────────────────────────────── */}
+      {/* ── Split body ───────────────────────────────────────────────────── */}
       <div className="flex-1 max-w-screen-xl mx-auto w-full px-4 sm:px-6 py-6">
         {error && (
-          <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400" role="alert">
-            {error}
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700" role="alert">
+            <strong>Something went wrong:</strong> {error}
           </div>
         )}
 
-        <div className="flex gap-6 h-[calc(100vh-13rem)]">
+        <div className="flex gap-6 h-[calc(100vh-16rem)]">
 
-          {/* ── Left: Entry list ─────────────────────────────────────────── */}
+          {/* ── Card list ────────────────────────────────────────────────── */}
           <section
-            className={cn(
-              'flex flex-col overflow-hidden rounded-xl',
-              'lg:flex lg:w-[420px] xl:w-[460px] shrink-0',
-              mobileView === 'map' ? 'hidden' : 'flex w-full'
-            )}
-            aria-label="Knowledge entries list"
+            className={cn('flex flex-col lg:w-[440px] xl:w-[480px] shrink-0', mobileView === 'map' ? 'hidden' : 'flex w-full')}
+            aria-label="Knowledge entries"
           >
-            {/* List header */}
-            <div className="flex items-center justify-between mb-3 shrink-0">
-              <p
-                className="text-xs text-slate-500"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {isPending
-                  ? 'Loading…'
-                  : `${totalCount.toLocaleString()} entr${totalCount === 1 ? 'y' : 'ies'}${totalPages > 1 ? ` · Page ${currentPage} of ${totalPages}` : ''}`
-                }
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <p className="text-sm text-[#9CA3AF]" aria-live="polite" aria-atomic="true">
+                {isPending ? 'Loading…' : `${totalCount.toLocaleString()} entr${totalCount === 1 ? 'y' : 'ies'} found${totalPages > 1 ? ` · Page ${currentPage} of ${totalPages}` : ''}`}
               </p>
-              {totalCount > 0 && !isPending && (
-                <span className="text-[10px] text-slate-600">Click an entry to view details</span>
+              {!isPending && totalCount > 0 && (
+                <p className="text-xs text-[#9CA3AF]">Tap any entry to view details</p>
               )}
             </div>
 
-            {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto overscroll-contain space-y-2 pr-1">
+            <div className="flex-1 overflow-y-auto overscroll-contain space-y-3 pr-1">
               {isPending
-                ? Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)
+                ? Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
                 : entries.length === 0
                 ? (
-                  <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-16">
-                    <div className="h-12 w-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
-                      <Leaf className="h-6 w-6 text-slate-600" aria-hidden="true" />
+                  <div className="flex flex-col items-center justify-center h-full gap-4 py-16 text-center">
+                    <div className="h-16 w-16 rounded-2xl bg-[#FEF9F0] border border-[#E8DDD0] flex items-center justify-center">
+                      <Leaf className="h-8 w-8 text-[#D4C4B0]" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-400">No entries found</p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        {hasFilters ? 'Try adjusting your filters.' : 'The vault is empty.'}
+                      <p className="text-base font-semibold text-[#4B5563]">No entries found</p>
+                      <p className="text-sm text-[#9CA3AF] mt-1">
+                        {hasFilters ? 'Try adjusting your search or filters.' : 'The vault is currently empty.'}
                       </p>
                       {hasFilters && (
-                        <button
-                          onClick={clearAll}
-                          className="mt-3 text-xs text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors"
-                        >
+                        <button onClick={clearAll} className="mt-3 text-sm font-semibold text-[#9A3412] hover:underline transition-colors">
                           Clear all filters
                         </button>
                       )}
@@ -387,50 +331,43 @@ export function VaultBrowseClient({
 
             {/* Pagination */}
             {totalPages > 1 && !isPending && (
-              <div className="flex items-center justify-center gap-2 pt-4 shrink-0 border-t border-slate-700/40 mt-3">
+              <div className="flex items-center justify-center gap-3 pt-5 shrink-0 border-t border-[#E8DDD0] mt-4">
                 <button
                   onClick={() => navigate(buildUrl({ page: currentPage - 1 }))}
                   disabled={currentPage <= 1}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-slate-400 border border-slate-700 bg-slate-800 hover:border-slate-600 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-[#E8DDD0] bg-white text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                   aria-label="Previous page"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" /> Prev
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Previous
                 </button>
-                <span className="text-xs text-slate-500 px-2 tabular-nums">
-                  {currentPage} / {totalPages}
-                </span>
+                <span className="text-sm text-[#9CA3AF] px-2">{currentPage} of {totalPages}</span>
                 <button
                   onClick={() => navigate(buildUrl({ page: currentPage + 1 }))}
                   disabled={currentPage >= totalPages}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-slate-400 border border-slate-700 bg-slate-800 hover:border-slate-600 hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-[#E8DDD0] bg-white text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                   aria-label="Next page"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  Next <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
             )}
           </section>
 
-          {/* ── Right: Map panel ─────────────────────────────────────────── */}
+          {/* ── Map panel ─────────────────────────────────────────────────── */}
           <section
-            className={cn(
-              'flex-1 min-w-0',
-              'lg:flex hidden',
-              mobileView === 'map' ? 'flex w-full' : 'hidden'
-            )}
-            aria-label="Geo-location map"
+            className={cn('flex-1 min-w-0 lg:flex hidden', mobileView === 'map' ? 'flex w-full' : 'hidden')}
+            aria-label="Location map"
           >
             <ResearchMapPanel
               entries={mapEntries}
               selectedId={selectedEntry?.id}
-              onSelectEntry={handleMapSelect}
+              onSelectEntry={handleMapSel}
               className="w-full h-full"
             />
           </section>
         </div>
       </div>
 
-      {/* ── Vault detail drawer ──────────────────────────────────────────── */}
       <VaultDetailDrawer
         entry={selectedEntry}
         isOpen={drawerOpen}

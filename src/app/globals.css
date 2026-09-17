@@ -1,63 +1,91 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ──────────────────────────────────────────────────────────
-   Poloko IKS — Editorial Dark Theme
+/* ─── Poloko IKS — Warm Earth Design Tokens ──────────────────────────────────
+   Philosophy: Warm, trustworthy, and accessible for all community members.
+   Feels like natural parchment and earthy heritage — not tech software.
+
    Palette:
-     Navy backdrop  #0F172A  (slate-900)
-     Surface        #1E293B  (slate-800)
-     Border         #334155  (slate-700)
-     Emerald accent #059669  (emerald-600) — verified / public
-     Amber warm     #D97706  (amber-600)   — restricted tier
-     Red sacred     #DC2626  (red-600)     — sacred tier / danger
-     Text primary   #F8FAFC  (slate-50)
-     Text secondary #94A3B8  (slate-400)
+     Sand background   #FDFBF7  — soft off-white, easy on the eyes outdoors
+     Surface white     #FFFFFF  — clean card surfaces
+     Surface warm      #FEF9F0  — warm tinted panels
+     Border            #E8DDD0  — gentle warm separator
+     Border strong     #D4C4B0  — slightly stronger divider
+
+     Terracotta        #9A3412  — deep Kalahari ochre, primary brand colour
+     Terracotta hover  #7C2D12  — darker hover
+     Terracotta light  #FEF2E8  — tinted background for terracotta elements
+
+     Sage green        #15803D  — verified / public / success
+     Sage light        #F0FDF4  — soft green background
+     Sage border       #BBF7D0  — green badge border
+
+     Amber warm        #B45309  — restricted / caution
+     Amber light       #FFFBEB  — soft amber background
+     Amber border      #FDE68A  — amber badge border
+
+     Red earth         #B91C1C  — sacred / important warning
+     Red light         #FEF2F2  — soft red background
+     Red border        #FECACA  — red badge border
+
+     Charcoal          #1F2937  — primary text, strong contrast
+     Grey mid          #4B5563  — secondary text
+     Grey soft         #9CA3AF  — placeholder / muted
+     Grey faint        #F3F0EB  — hover backgrounds on sand
 ────────────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* Surfaces */
-  --bg-base:       #0F172A;
-  --bg-surface:    #1E293B;
-  --bg-elevated:   #263346;
-  --border:        #334155;
-  --border-subtle: #1E293B;
+  --bg-base:       #FDFBF7;
+  --bg-surface:    #FFFFFF;
+  --bg-warm:       #FEF9F0;
+  --bg-hover:      #F3F0EB;
+  --border:        #E8DDD0;
+  --border-strong: #D4C4B0;
 
-  /* Brand */
-  --primary:       #059669;  /* emerald-600 */
-  --primary-hover: #047857;  /* emerald-700 */
-  --primary-glow:  rgba(5, 150, 105, 0.15);
+  /* Brand — Terracotta */
+  --primary:       #9A3412;
+  --primary-hover: #7C2D12;
+  --primary-light: #FEF2E8;
+  --primary-border:#FDBA74;
 
-  /* Access tiers */
-  --tier-public:      #059669;
-  --tier-restricted:  #D97706;
-  --tier-sacred:      #DC2626;
+  /* Sage green — public / verified */
+  --green:         #15803D;
+  --green-light:   #F0FDF4;
+  --green-border:  #BBF7D0;
+
+  /* Amber — restricted */
+  --amber:         #B45309;
+  --amber-light:   #FFFBEB;
+  --amber-border:  #FDE68A;
+
+  /* Red — sacred */
+  --red:           #B91C1C;
+  --red-light:     #FEF2F2;
+  --red-border:    #FECACA;
 
   /* Text */
-  --text-primary:   #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted:     #64748B;
+  --text-primary:   #1F2937;
+  --text-secondary: #4B5563;
+  --text-muted:     #9CA3AF;
 
-  /* Functional */
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error:   #EF4444;
-  --info:    #3B82F6;
-
-  /* Legacy compat — kept for existing light-mode components */
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --accent: #D97706;
+  /* Legacy */
+  --background: #FDFBF7;
+  --foreground: #1F2937;
+  --primary-dark: #7C2D12;
+  --accent: #B45309;
 }
 
-/* ─── Base ─────────────────────────────────────────────────────────────────── */
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: var(--font-geist-sans, 'Arial', sans-serif);
+  font-family: var(--font-geist-sans, 'Inter', 'Public Sans', 'Arial', sans-serif);
   -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
 }
 
 /* ─── Leaflet ───────────────────────────────────────────────────────────────── */
@@ -65,55 +93,63 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #1a2744;
+  background: #e8e0d8;
+  border-radius: 0;
 }
 
-/* Dark tile filter for Leaflet OSM tiles */
+/* Warm tint on OSM tiles — subtle sepia effect */
 .leaflet-tile-pane {
-  filter: brightness(0.7) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  filter: saturate(0.85) sepia(0.12) brightness(1.02);
+}
+
+/* Leaflet popup styling */
+.poloko-popup .leaflet-popup-content-wrapper {
+  background: #FFFFFF !important;
+  border: 1px solid #E8DDD0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(154, 52, 18, 0.08) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.poloko-popup .leaflet-popup-content {
+  margin: 0 !important;
+}
+.poloko-popup .leaflet-popup-tip {
+  background: #FFFFFF !important;
+  border: 1px solid #E8DDD0 !important;
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-surface);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F3F0EB; }
+::-webkit-scrollbar-thumb { background: #D4C4B0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B8A898; }
 
-/* ─── Focus ring ────────────────────────────────────────────────────────────── */
+/* ─── Focus ring — accessible, warm ────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid #9A3412;
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* ─── Animated gradient shimmer for skeletons ───────────────────────────────── */
+/* ─── Skeleton shimmer ──────────────────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
 }
-
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--bg-surface) 25%,
-    var(--bg-elevated) 50%,
-    var(--bg-surface) 75%
+    #F3F0EB 25%,
+    #E8DDD0 50%,
+    #F3F0EB 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
+  animation: shimmer 1.8s ease-in-out infinite;
   border-radius: 6px;
 }
 
-/* ─── Slide-over drawer animation ───────────────────────────────────────────── */
+/* ─── Drawer slide animation ────────────────────────────────────────────────── */
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -122,29 +158,40 @@ body {
   from { transform: translateX(0);    opacity: 1; }
   to   { transform: translateX(100%); opacity: 0; }
 }
-
-.drawer-enter { animation: slideInRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.drawer-enter { animation: slideInRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .drawer-exit  { animation: slideOutRight 0.22s ease-in forwards; }
 
 /* ─── Toast animation ───────────────────────────────────────────────────────── */
 @keyframes toastIn {
-  from { transform: translateY(16px); opacity: 0; }
+  from { transform: translateY(12px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
 .toast-enter { animation: toastIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 
-/* ─── Hash copy pulse ───────────────────────────────────────────────────────── */
+/* ─── Hash copy feedback ────────────────────────────────────────────────────── */
 @keyframes hashPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.5); }
-  70%  { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(21, 128, 61, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
 }
 .hash-copied { animation: hashPulse 0.6s ease-out; }
 
-/* ─── Map marker pulse for selected ────────────────────────────────────────── */
+/* ─── Map marker pulse ──────────────────────────────────────────────────────── */
 @keyframes markerPulse {
   0%   { transform: scale(1); }
-  50%  { transform: scale(1.5); }
+  50%  { transform: scale(1.6); }
   100% { transform: scale(1); }
 }
-.marker-selected { animation: markerPulse 0.4s ease-out; }
+.marker-selected { animation: markerPulse 0.35s ease-out; }
+
+/* ─── Card hover lift ───────────────────────────────────────────────────────── */
+.card-lift {
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+.card-lift:hover {
+  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.08);
+  transform: translateY(-1px);
+}
+.card-lift:focus-within {
+  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.1);
+}

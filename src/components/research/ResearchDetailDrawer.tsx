@@ -16,67 +16,63 @@ import type { ResearchListing, LicenseType } from '@/lib/types'
 /* ─── Skeleton ──────────────────────────────────────────────────────────────── */
 function DrawerSkeleton() {
   return (
-    <div className="flex flex-col gap-4 p-6 animate-pulse" aria-hidden="true">
-      <div className="skeleton h-6 w-3/4 rounded" />
+    <div className="p-6 space-y-4" aria-hidden="true">
+      <div className="skeleton h-7 w-4/5 rounded-xl" />
       <div className="skeleton h-4 w-1/3 rounded" />
-      <div className="skeleton h-20 w-full rounded" />
-      <div className="skeleton h-32 w-full rounded-xl" />
-      <div className="skeleton h-24 w-full rounded-xl" />
-      <div className="skeleton h-10 w-full rounded-xl" />
+      <div className="skeleton h-16 w-full rounded-2xl" />
+      <div className="skeleton h-28 w-full rounded-2xl" />
+      <div className="skeleton h-20 w-full rounded-2xl" />
+      <div className="skeleton h-10 w-full rounded-2xl" />
     </div>
   )
 }
 
-/* ─── Hash copy button ──────────────────────────────────────────────────────── */
-function HashDisplay({ hash, label = 'SHA-256' }: { hash: string; label?: string }) {
+/* ─── Protected record block ────────────────────────────────────────────────── */
+function ProtectedRecordBlock({ hash }: { hash: string }) {
   const [copied, setCopied] = useState(false)
-  const { toast } = useToast()
-  const btnRef = useRef<HTMLButtonElement>(null)
+  const { toast }  = useToast()
+  const btnRef     = useRef<HTMLButtonElement>(null)
 
   async function copyHash() {
     await navigator.clipboard.writeText(hash)
     setCopied(true)
     btnRef.current?.classList.add('hash-copied')
-    toast({ type: 'success', message: 'Hash copied to clipboard', description: `${hash.slice(0, 16)}…` })
-    setTimeout(() => {
-      setCopied(false)
-      btnRef.current?.classList.remove('hash-copied')
-    }, 2000)
+    toast({ type: 'success', message: 'Proof of authorship copied', description: 'The unique identifier has been copied to your clipboard.' })
+    setTimeout(() => { setCopied(false); btnRef.current?.classList.remove('hash-copied') }, 2500)
   }
 
   return (
-    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-emerald-400" aria-hidden="true" />
-          <span className="text-xs font-semibold text-emerald-300">{label} Timestamp Proof</span>
+    <div className="rounded-2xl border border-[#BBF7D0] bg-[#F0FDF4] p-4">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="h-9 w-9 rounded-full bg-[#DCFCE7] flex items-center justify-center shrink-0">
+          <Shield className="h-4.5 w-4.5 text-[#15803D]" style={{ width: 18, height: 18 }} aria-hidden="true" />
         </div>
-        <button
-          ref={btnRef}
-          onClick={copyHash}
-          className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all',
-            copied
-              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              : 'bg-slate-700 text-slate-300 border border-slate-600 hover:border-emerald-500/30 hover:text-emerald-300'
-          )}
-          aria-label={copied ? 'Hash copied' : 'Copy SHA-256 hash'}
-        >
-          {copied
-            ? <><Check className="h-3 w-3" aria-hidden="true" /> Copied</>
-            : <><Copy className="h-3 w-3" aria-hidden="true" /> Copy</>
-          }
-        </button>
+        <div>
+          <p className="text-sm font-bold text-[#14532D]">Verified Authorship Record</p>
+          <p className="text-xs text-[#15803D] mt-0.5 leading-relaxed">
+            This research has a tamper-proof unique identifier proving when it was registered in the Poloko IKS system.
+          </p>
+        </div>
       </div>
-      <p
-        className="font-mono text-[11px] text-emerald-400/80 break-all leading-relaxed select-all"
-        aria-label="SHA-256 hash value"
-      >
-        {hash}
-      </p>
-      <p className="text-[10px] text-slate-500 mt-2">
-        Immutable proof of authorship registered at time of submission. Verifiable against the original document.
-      </p>
+      <div className="bg-white rounded-xl border border-[#BBF7D0] p-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide">Unique Proof ID</span>
+          <button
+            ref={btnRef}
+            onClick={copyHash}
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all',
+              copied
+                ? 'bg-[#DCFCE7] text-[#15803D] border-[#BBF7D0]'
+                : 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0] hover:bg-[#DCFCE7]'
+            )}
+            aria-label={copied ? 'Copied!' : 'Copy proof identifier'}
+          >
+            {copied ? <><Check className="h-3 w-3" aria-hidden="true" /> Copied!</> : <><Copy className="h-3 w-3" aria-hidden="true" /> Copy</>}
+          </button>
+        </div>
+        <p className="font-mono text-[10px] text-[#4B5563] break-all leading-relaxed select-all">{hash}</p>
+      </div>
     </div>
   )
 }
@@ -84,78 +80,43 @@ function HashDisplay({ hash, label = 'SHA-256' }: { hash: string; label?: string
 /* ─── Media viewer ──────────────────────────────────────────────────────────── */
 function MediaViewer({ urls }: { urls: string[] }) {
   const [active, setActive] = useState(0)
-
   if (!urls.length) return null
-
   const url = urls[active]
   const ext = url.split('.').pop()?.toLowerCase() ?? ''
   const isVideo = ['mp4', 'webm', 'mov'].includes(ext)
   const isAudio = ['mp3', 'wav', 'ogg', 'm4a'].includes(ext)
 
   return (
-    <div className="rounded-xl border border-slate-700 overflow-hidden bg-slate-900">
-      {/* Main viewer */}
-      <div className="relative aspect-video bg-slate-950 flex items-center justify-center">
+    <div className="rounded-2xl border border-[#E8DDD0] overflow-hidden bg-[#FDFBF7]">
+      <div className="relative aspect-video bg-[#F3F0EB] flex items-center justify-center">
         {isVideo ? (
-          <video
-            src={url}
-            controls
-            className="w-full h-full object-contain"
-            aria-label="Research media video"
-          />
+          <video src={url} controls className="w-full h-full object-contain" aria-label="Research video" />
         ) : isAudio ? (
           <div className="flex flex-col items-center gap-3 p-6">
-            <Film className="h-10 w-10 text-slate-600" aria-hidden="true" />
-            <audio src={url} controls className="w-full" aria-label="Research media audio" />
+            <Film className="h-10 w-10 text-[#D4C4B0]" aria-hidden="true" />
+            <audio src={url} controls className="w-full" aria-label="Research audio" />
           </div>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={url}
-            alt={`Research media ${active + 1}`}
-            className="w-full h-full object-contain"
-          />
+          <img src={url} alt={`Media ${active + 1}`} className="w-full h-full object-contain" />
         )}
-
-        {/* Open externally */}
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/50 text-white/70 hover:text-white hover:bg-black/70 transition-colors"
-          aria-label="Open media in new tab"
-        >
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/80 text-[#4B5563] hover:text-[#9A3412] border border-[#E8DDD0] transition-colors"
+          aria-label="Open in new tab">
           <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
         </a>
       </div>
-
-      {/* Thumbnail strip */}
       {urls.length > 1 && (
-        <div className="flex gap-2 p-2 bg-slate-900 border-t border-slate-800 overflow-x-auto" role="tablist" aria-label="Media thumbnails">
-          {urls.map((u, i) => {
-            const isImg = !['mp4','webm','mov','mp3','wav','ogg','m4a'].includes(u.split('.').pop()?.toLowerCase() ?? '')
-            return (
-              <button
-                key={i}
-                role="tab"
-                aria-selected={active === i}
-                onClick={() => setActive(i)}
-                className={cn(
-                  'shrink-0 h-12 w-16 rounded-lg border overflow-hidden flex items-center justify-center transition-all',
-                  active === i
-                    ? 'border-emerald-500/50 ring-1 ring-emerald-500/30'
-                    : 'border-slate-700 hover:border-slate-600'
-                )}
-                aria-label={`Media item ${i + 1}`}
-              >
-                {isImg
-                  // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={u} alt="" className="h-full w-full object-cover" aria-hidden="true" />
-                  : <ImageIcon className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                }
-              </button>
-            )
-          })}
+        <div className="flex gap-2 p-3 border-t border-[#E8DDD0] overflow-x-auto" role="tablist">
+          {urls.map((u, i) => (
+            <button key={i} role="tab" aria-selected={active === i} onClick={() => setActive(i)}
+              className={cn('shrink-0 h-12 w-16 rounded-xl border-2 overflow-hidden transition-all',
+                active === i ? 'border-[#9A3412]' : 'border-[#E8DDD0] hover:border-[#D4C4B0]'
+              )} aria-label={`Media ${i + 1}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={u} alt="" className="h-full w-full object-cover" aria-hidden="true" />
+            </button>
+          ))}
         </div>
       )}
     </div>
@@ -163,44 +124,28 @@ function MediaViewer({ urls }: { urls: string[] }) {
 }
 
 /* ─── Collapsible section ───────────────────────────────────────────────────── */
-function Section({
-  title, icon: Icon, defaultOpen = true, children,
-}: {
-  title: string
-  icon: typeof Shield
-  defaultOpen?: boolean
-  children: React.ReactNode
+function Section({ title, icon: Icon, defaultOpen = true, children }: {
+  title: string; icon: typeof Shield; defaultOpen?: boolean; children: React.ReactNode
 }) {
   const [open, setOpen] = useState(defaultOpen)
-  const id = `section-${title.replace(/\s+/g, '-').toLowerCase()}`
-
+  const id = `res-sec-${title.replace(/\s+/g, '-').toLowerCase()}`
   return (
-    <div className="rounded-xl border border-slate-700/60 overflow-hidden">
-      <button
-        onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/60 hover:bg-slate-800 transition-colors text-left"
-        aria-expanded={open}
-        aria-controls={id}
-      >
-        <span className="flex items-center gap-2 text-xs font-semibold text-slate-300 uppercase tracking-wide">
-          <Icon className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
+    <div className="rounded-2xl border border-[#E8DDD0] bg-white overflow-hidden">
+      <button onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#FDFBF7] transition-colors text-left"
+        aria-expanded={open} aria-controls={id}>
+        <span className="flex items-center gap-2.5 text-sm font-semibold text-[#1F2937]">
+          <Icon className="h-4 w-4 text-[#9CA3AF]" aria-hidden="true" />
           {title}
         </span>
-        {open
-          ? <ChevronUp className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
-          : <ChevronDown className="h-3.5 w-3.5 text-slate-500" aria-hidden="true" />
-        }
+        {open ? <ChevronUp className="h-4 w-4 text-[#9CA3AF]" aria-hidden="true" /> : <ChevronDown className="h-4 w-4 text-[#9CA3AF]" aria-hidden="true" />}
       </button>
-      {open && (
-        <div id={id} className="p-4 bg-slate-900/40 space-y-3">
-          {children}
-        </div>
-      )}
+      {open && <div id={id} className="px-5 pb-5 space-y-3">{children}</div>}
     </div>
   )
 }
 
-/* ─── Main Drawer ───────────────────────────────────────────────────────────── */
+/* ─── Main drawer ───────────────────────────────────────────────────────────── */
 interface DrawerProps {
   listing: ResearchListing | null
   isOpen: boolean
@@ -210,242 +155,179 @@ interface DrawerProps {
 }
 
 export function ResearchDetailDrawer({ listing, isOpen, onClose, userRole, userId }: DrawerProps) {
-  const [loading, setLoading] = useState(false)
-  const [downloading, setDownloading] = useState(false)
-  const [citing, setCiting] = useState(false)
+  const [loading,         setLoading]         = useState(false)
+  const [downloading,     setDownloading]     = useState(false)
+  const [citing,          setCiting]          = useState(false)
   const [selectedLicense, setSelectedLicense] = useState<LicenseType | null>(null)
   const drawerRef = useRef<HTMLDivElement>(null)
-  const closeRef = useRef<HTMLButtonElement>(null)
+  const closeRef  = useRef<HTMLButtonElement>(null)
   const { toast } = useToast()
 
-  /* Focus trap & escape key */
   useEffect(() => {
     if (!isOpen) return
     const prev = document.activeElement as HTMLElement
-    setTimeout(() => closeRef.current?.focus(), 50)
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-
-      /* Basic focus trap */
-      if (e.key === 'Tab' && drawerRef.current) {
-        const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-        )
-        const first = focusable[0]
-        const last  = focusable[focusable.length - 1]
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault(); last.focus()
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault(); first.focus()
-        }
-      }
+    setTimeout(() => closeRef.current?.focus(), 60)
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab' || !drawerRef.current) return
+      const els = drawerRef.current.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])')
+      const first = els[0]; const last = els[els.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
     }
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      prev?.focus()
-    }
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('keydown', onKey); prev?.focus() }
   }, [isOpen, onClose])
 
-  /* Reset per-listing state when listing changes */
   useEffect(() => {
     if (listing) {
       setSelectedLicense(listing.license_type ?? null)
       setLoading(true)
-      const t = setTimeout(() => setLoading(false), 300)
+      const t = setTimeout(() => setLoading(false), 200)
       return () => clearTimeout(t)
     }
-  }, [listing?.id])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [listing?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDownload = useCallback(async () => {
-    if (!listing?.full_document_url || !listing?.id) return
+    if (!listing?.full_document_url) return
     setDownloading(true)
     try {
-      await fetch('/api/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing_id: listing.id }),
-      })
+      await fetch('/api/download', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing_id: listing.id }) })
       window.open(listing.full_document_url, '_blank', 'noopener,noreferrer')
-      toast({
-        type: 'success',
-        message: listing.price === 0 ? 'Download started' : 'Purchase successful',
-        description: listing.title,
-      })
+      toast({ type: 'success', message: listing.price === 0 ? 'Download started' : 'Purchase successful', description: listing.title })
     } catch {
       toast({ type: 'error', message: 'Download failed. Please try again.' })
-    } finally {
-      setDownloading(false)
-    }
+    } finally { setDownloading(false) }
   }, [listing, toast])
 
   const handleCite = useCallback(async () => {
     if (!listing) return
     setCiting(true)
-
     const citation = [
       listing.profiles?.full_name ?? 'Unknown Author',
-      `(${new Date(listing.created_at).getFullYear()})`,
+      `(${new Date(listing.created_at).getFullYear()}).`,
       listing.title + '.',
       'Poloko IKS Research Hub.',
-      `SHA-256: ${listing.sha256_hash.slice(0, 16)}…`,
+      `Record ID: ${listing.sha256_hash.slice(0, 16)}…`,
     ].join(' ')
-
     try {
       await navigator.clipboard.writeText(citation)
-      await fetch('/api/audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'cite', target_type: 'research_listing', target_id: listing.id }),
-      })
-      toast({
-        type: 'success',
-        message: 'Citation copied',
-        description: 'Formatted citation is now in your clipboard.',
-      })
+      await fetch('/api/audit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cite', target_type: 'research_listing', target_id: listing.id }) })
+      toast({ type: 'success', message: 'Citation copied', description: 'Formatted citation is ready to paste.' })
     } catch {
       toast({ type: 'error', message: 'Could not copy citation.' })
-    } finally {
-      setTimeout(() => setCiting(false), 1500)
-    }
+    } finally { setTimeout(() => setCiting(false), 1500) }
   }, [listing, toast])
 
   if (!isOpen) return null
 
+  const listingWithMedia = listing as (ResearchListing & { media_urls?: string[] }) | null
+
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
-        aria-hidden="true"
-        onClick={onClose}
-      />
-
-      {/* Drawer panel */}
+      <div className="fixed inset-0 z-[60] bg-[#1F2937]/40 backdrop-blur-[2px]" aria-hidden="true" onClick={onClose} />
       <div
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label={listing ? `Details: ${listing.title}` : 'Research details'}
+        aria-label={listing ? `Research: ${listing.title}` : 'Research details'}
         className={cn(
           'fixed right-0 top-0 bottom-0 z-[70] flex flex-col',
-          'w-full sm:w-[480px] lg:w-[520px]',
-          'bg-slate-900 border-l border-slate-700',
-          'shadow-2xl shadow-black/60',
+          'w-full sm:w-[500px] lg:w-[540px]',
+          'bg-[#FDFBF7] border-l border-[#E8DDD0] shadow-2xl shadow-[#1F2937]/10',
           isOpen ? 'drawer-enter' : 'drawer-exit'
         )}
       >
-        {/* ── Drawer header ───────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/60 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 flex items-center justify-center rounded-md bg-emerald-500/15 border border-emerald-500/25">
-              <FileText className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E8DDD0] bg-white shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-[#FEF2E8] border border-[#FDBA74] flex items-center justify-center shrink-0">
+              <FileText className="h-4 w-4 text-[#9A3412]" aria-hidden="true" />
             </div>
-            <span className="text-sm font-semibold text-slate-100">Research Details</span>
+            <div>
+              <p className="text-sm font-bold text-[#1F2937]">Research Details</p>
+              <p className="text-xs text-[#9CA3AF]">Poloko IKS Research Hub</p>
+            </div>
           </div>
           <button
             ref={closeRef}
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-            aria-label="Close details panel"
+            className="p-2 rounded-xl text-[#9CA3AF] hover:text-[#9A3412] hover:bg-[#FEF9F0] transition-colors border border-transparent hover:border-[#E8DDD0]"
+            aria-label="Close research details"
           >
-            <X className="h-4 w-4" aria-hidden="true" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
-        {/* ── Scrollable content ──────────────────────────────────────────── */}
+        {/* Body */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {loading || !listing ? (
             <DrawerSkeleton />
           ) : (
-            <div className="p-5 space-y-4">
-
-              {/* Title + meta */}
+            <div className="p-6 space-y-5">
+              {/* Title */}
               <div>
-                <h2 className="text-base font-bold text-slate-100 leading-snug mb-1.5">
-                  {listing.title}
-                </h2>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                <h2 className="text-xl font-bold text-[#1F2937] leading-snug mb-2">{listing.title}</h2>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-[#4B5563]">
                   {listing.profiles?.full_name && (
-                    <span className="font-medium text-slate-300">
-                      {listing.profiles.full_name}
-                    </span>
+                    <span className="font-medium text-[#1F2937]">{listing.profiles.full_name}</span>
                   )}
-                  {listing.profiles?.community && (
-                    <>
-                      <span className="text-slate-600" aria-hidden="true">·</span>
-                      <span>{listing.profiles.community}</span>
-                    </>
-                  )}
-                  <span className="text-slate-600" aria-hidden="true">·</span>
-                  <span>{formatRelativeDate(listing.created_at)}</span>
+                  {listing.profiles?.community && <><span className="text-[#D4C4B0]">·</span><span>{listing.profiles.community}</span></>}
+                  <span className="text-[#D4C4B0]">·</span>
+                  <span className="text-[#9CA3AF] text-xs">{formatRelativeDate(listing.created_at)}</span>
                 </div>
-
-                {/* Tags */}
                 {listing.tags && listing.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3" aria-label="Tags">
                     {listing.tags.map(tag => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center gap-1 bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded border border-slate-700"
-                      >
-                        <Tag className="h-2.5 w-2.5" aria-hidden="true" />
-                        {tag}
+                      <span key={tag} className="inline-flex items-center gap-1 bg-[#F3F0EB] text-[#4B5563] text-xs px-2.5 py-1 rounded-full">
+                        <Tag className="h-3 w-3 text-[#9CA3AF]" aria-hidden="true" />{tag}
                       </span>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Abstract */}
-              {listing.abstract && (
-                <Section title="Abstract" icon={FileText}>
-                  <p className="text-sm text-slate-300 leading-relaxed">{listing.abstract}</p>
-                </Section>
-              )}
-
-              {/* Media viewer — media_urls is present on knowledge entries referenced via listing */}
-              {(listing as ResearchListing & { media_urls?: string[] }).media_urls?.length ? (
-                <Section title="Media" icon={ImageIcon}>
-                  <MediaViewer urls={(listing as ResearchListing & { media_urls?: string[] }).media_urls!} />
-                </Section>
-              ) : null}
-
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: 'Views',    value: listing.view_count,     icon: Eye },
-                  { label: 'Downloads', value: listing.download_count, icon: Download },
-                  { label: 'Collaborators', value: listing.collaborators?.length ?? 0, icon: Users },
+                  { label: 'Views',         value: listing.view_count,               icon: Eye      },
+                  { label: 'Downloads',     value: listing.download_count,           icon: Download },
+                  { label: 'Contributors',  value: listing.collaborators?.length ?? 0, icon: Users  },
                 ].map(({ label, value, icon: Icon }) => (
-                  <div
-                    key={label}
-                    className="flex flex-col items-center gap-1 p-3 rounded-xl bg-slate-800/60 border border-slate-700/60"
-                  >
-                    <Icon className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                    <span className="text-base font-bold text-slate-100 tabular-nums">
-                      {value.toLocaleString()}
-                    </span>
-                    <span className="text-[10px] text-slate-500">{label}</span>
+                  <div key={label} className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-white border border-[#E8DDD0] text-center">
+                    <Icon className="h-4 w-4 text-[#9CA3AF]" aria-hidden="true" />
+                    <span className="text-lg font-bold text-[#1F2937]">{value.toLocaleString()}</span>
+                    <span className="text-xs text-[#9CA3AF]">{label}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Collaborators list */}
+              {/* Abstract */}
+              {listing.abstract && (
+                <Section title="About this Research" icon={FileText}>
+                  <p className="text-sm text-[#4B5563] leading-relaxed">{listing.abstract}</p>
+                </Section>
+              )}
+
+              {/* Media */}
+              {listingWithMedia?.media_urls && listingWithMedia.media_urls.length > 0 && (
+                <Section title="Media" icon={ImageIcon}>
+                  <MediaViewer urls={listingWithMedia.media_urls} />
+                </Section>
+              )}
+
+              {/* Collaborators */}
               {listing.collaborators && listing.collaborators.length > 0 && (
                 <Section title="Contributors" icon={Users} defaultOpen={false}>
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {listing.collaborators.map(c => (
-                      <div key={c.id} className="flex items-center justify-between">
+                      <div key={c.id} className="flex items-center justify-between p-3 bg-[#FDFBF7] rounded-xl border border-[#E8DDD0]">
                         <div>
-                          <p className="text-sm font-medium text-slate-200">{c.profiles?.full_name ?? 'Unknown'}</p>
-                          {c.contribution && (
-                            <p className="text-xs text-slate-500 mt-0.5">{c.contribution}</p>
-                          )}
+                          <p className="text-sm font-semibold text-[#1F2937]">{c.profiles?.full_name ?? 'Unknown'}</p>
+                          {c.contribution && <p className="text-xs text-[#9CA3AF] mt-0.5">{c.contribution}</p>}
                         </div>
                         {c.credit_share != null && (
-                          <span className="text-xs bg-blue-500/15 text-blue-400 border border-blue-500/25 px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full font-medium">
                             {c.credit_share}% credit
                           </span>
                         )}
@@ -457,18 +339,14 @@ export function ResearchDetailDrawer({ listing, isOpen, onClose, userRole, userI
 
               {/* Collaboration CTA */}
               {listing.status === 'open_for_collaboration' && userId && userId !== listing.author_id && (
-                <div className="flex items-start gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
-                  <UserPlus className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" aria-hidden="true" />
+                <div className="flex items-start gap-4 rounded-2xl border border-blue-200 bg-blue-50 p-5">
+                  <UserPlus className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" aria-hidden="true" />
                   <div>
-                    <p className="text-sm font-semibold text-blue-300">Open for collaboration</p>
-                    <p className="text-xs text-slate-400 mt-0.5 mb-3">
-                      Contribute your expertise and receive intellectual credit.
-                    </p>
-                    <a
-                      href={`/research/collaborate/${listing.id}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                    <p className="text-sm font-bold text-blue-900">This research is open for collaboration</p>
+                    <p className="text-sm text-blue-700 mt-1 mb-3 leading-relaxed">Contribute your expertise and receive intellectual credit for your work.</p>
+                    <a href={`/research/collaborate/${listing.id}`}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors">
+                      <UserPlus className="h-4 w-4" aria-hidden="true" />
                       Apply to Collaborate
                     </a>
                   </div>
@@ -476,61 +354,48 @@ export function ResearchDetailDrawer({ listing, isOpen, onClose, userRole, userI
               )}
 
               {/* License selector */}
-              <Section title="License" icon={BookMarked}>
-                <LicenseSelector
-                  value={selectedLicense ?? 'cc_by'}
-                  onChange={setSelectedLicense}
-                />
+              <Section title="License Type" icon={BookMarked}>
+                <LicenseSelector value={selectedLicense ?? 'cc_by'} onChange={setSelectedLicense} />
                 {listing.license_type && (
-                  <p className="text-[10px] text-slate-500 mt-2">
-                    Published under: <span className="text-slate-400 font-medium">
-                      {LICENSE_TYPE_LABELS[listing.license_type]}
-                    </span>
+                  <p className="text-xs text-[#9CA3AF] mt-2">
+                    Published under: <span className="font-semibold text-[#4B5563]">{LICENSE_TYPE_LABELS[listing.license_type]}</span>
                   </p>
                 )}
               </Section>
 
-              {/* SHA-256 proof */}
-              <HashDisplay hash={listing.sha256_hash} label="Proof of Authorship" />
+              {/* Protected record */}
+              <ProtectedRecordBlock hash={listing.sha256_hash} />
 
-              {/* Published date */}
-              <p className="text-xs text-slate-500 text-center">
+              <p className="text-xs text-center text-[#9CA3AF] pb-2">
                 Published {formatDate(listing.created_at)}
-                {listing.updated_at !== listing.created_at && ` · Updated ${formatRelativeDate(listing.updated_at)}`}
               </p>
             </div>
           )}
         </div>
 
-        {/* ── Sticky action footer ────────────────────────────────────────── */}
+        {/* Footer */}
         {listing && !loading && (
-          <div className="shrink-0 border-t border-slate-700/60 bg-slate-900/95 backdrop-blur-sm p-4 space-y-2">
-            {/* Price display */}
+          <div className="shrink-0 border-t border-[#E8DDD0] bg-white px-6 py-4 space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-slate-400">
+              <span className="text-sm text-[#9CA3AF]">
                 {listing.license_type ? LICENSE_TYPE_LABELS[listing.license_type] : 'License'}
               </span>
-              <span className={cn(
-                'text-base font-bold',
-                listing.price === 0 ? 'text-emerald-400' : 'text-slate-100'
-              )}>
+              <span className={cn('text-xl font-bold', listing.price === 0 ? 'text-[#15803D]' : 'text-[#1F2937]')}>
                 {listing.price === 0
-                  ? <span className="flex items-center gap-1"><Zap className="h-4 w-4" aria-hidden="true" />Free</span>
+                  ? <span className="flex items-center gap-1.5"><Zap className="h-5 w-5" aria-hidden="true" />Free</span>
                   : `BWP ${listing.price.toFixed(2)}`
                 }
               </span>
             </div>
 
-            {/* Primary: Download */}
             {listing.full_document_url ? (
               <button
                 onClick={handleDownload}
                 disabled={downloading}
                 className={cn(
-                  'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                  'bg-emerald-600 hover:bg-emerald-500 text-white',
-                  'disabled:opacity-60 disabled:cursor-not-allowed',
-                  downloading && 'animate-pulse'
+                  'w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all shadow-sm',
+                  'bg-[#9A3412] hover:bg-[#7C2D12] text-white',
+                  'disabled:opacity-60 disabled:cursor-not-allowed'
                 )}
                 aria-busy={downloading}
               >
@@ -538,37 +403,23 @@ export function ResearchDetailDrawer({ listing, isOpen, onClose, userRole, userI
                 {downloading ? 'Preparing…' : listing.price === 0 ? 'Download Free' : 'Purchase & Download'}
               </button>
             ) : (
-              <div className="w-full py-2.5 rounded-xl text-sm text-slate-500 text-center border border-dashed border-slate-700">
-                Document not yet uploaded
+              <div className="w-full py-3 rounded-xl text-sm text-[#9CA3AF] text-center border-2 border-dashed border-[#E8DDD0] bg-[#FDFBF7]">
+                Document not yet available
               </div>
             )}
 
-            {/* Secondary: Cite + View full page */}
             <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleCite}
-                disabled={citing}
-                className={cn(
-                  'flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all border',
+              <button onClick={handleCite} disabled={citing}
+                className={cn('flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all',
                   citing
-                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                    : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600 hover:text-white'
-                )}
-                aria-busy={citing}
-              >
-                {citing
-                  ? <><Check className="h-3.5 w-3.5" aria-hidden="true" /> Cited!</>
-                  : <><BookMarked className="h-3.5 w-3.5" aria-hidden="true" /> Cite</>
-                }
+                    ? 'border-[#15803D] bg-[#F0FDF4] text-[#15803D]'
+                    : 'border-[#E8DDD0] bg-[#FDFBF7] text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412]'
+                )} aria-busy={citing}>
+                {citing ? <><Check className="h-4 w-4" aria-hidden="true" /> Cited!</> : <><BookMarked className="h-4 w-4" aria-hidden="true" /> Cite</>}
               </button>
-              <a
-                href={`/research/${listing.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 border border-slate-700 text-slate-300 hover:border-slate-600 hover:text-white transition-all"
-                aria-label="Open full research page in new tab"
-              >
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              <a href={`/research/${listing.id}`} target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold border-2 border-[#E8DDD0] bg-[#FDFBF7] text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412] transition-all">
+                <ExternalLink className="h-4 w-4" aria-hidden="true" />
                 Full Page
               </a>
             </div>

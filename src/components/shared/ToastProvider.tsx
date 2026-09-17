@@ -1,19 +1,9 @@
 'use client'
 
-/**
- * Lightweight toast system for Poloko IKS.
- * Usage:
- *   const { toast } = useToast()
- *   toast({ type: 'success', message: 'Hash copied!' })
- */
-
-import {
-  createContext, useCallback, useContext, useEffect, useRef, useState,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-/* ─── Types ─────────────────────────────────────────────────────────────────── */
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 
 interface Toast {
@@ -21,7 +11,7 @@ interface Toast {
   type: ToastType
   message: string
   description?: string
-  duration?: number  // ms; default 4000
+  duration?: number
 }
 
 interface ToastContextValue {
@@ -29,68 +19,59 @@ interface ToastContextValue {
   dismiss: (id: string) => void
 }
 
-/* ─── Context ────────────────────────────────────────────────────────────────── */
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function useToast() {
   const ctx = useContext(ToastContext)
-  if (!ctx) throw new Error('useToast must be used inside <ToastProvider>')
+  if (!ctx) throw new Error('useToast must be inside <ToastProvider>')
   return ctx
 }
 
-/* ─── Icon & colour map ──────────────────────────────────────────────────────── */
 const TOAST_CONFIG: Record<ToastType, {
-  icon: typeof CheckCircle2
-  bar: string
-  iconColor: string
-  bg: string
-  border: string
-  title: string
+  icon: typeof CheckCircle2; bar: string; iconBg: string; iconColor: string; bg: string; border: string
 }> = {
   success: {
-    icon: CheckCircle2,
-    bar:       'bg-emerald-500',
-    iconColor: 'text-emerald-400',
-    bg:        'bg-slate-800',
-    border:    'border-emerald-500/30',
-    title:     'text-slate-100',
+    icon:      CheckCircle2,
+    bar:       'bg-[#15803D]',
+    iconBg:    'bg-[#F0FDF4]',
+    iconColor: 'text-[#15803D]',
+    bg:        'bg-white',
+    border:    'border-[#BBF7D0]',
   },
   error: {
-    icon: XCircle,
-    bar:       'bg-red-500',
-    iconColor: 'text-red-400',
-    bg:        'bg-slate-800',
-    border:    'border-red-500/30',
-    title:     'text-slate-100',
+    icon:      XCircle,
+    bar:       'bg-red-600',
+    iconBg:    'bg-red-50',
+    iconColor: 'text-red-600',
+    bg:        'bg-white',
+    border:    'border-red-200',
   },
   warning: {
-    icon: AlertTriangle,
-    bar:       'bg-amber-500',
-    iconColor: 'text-amber-400',
-    bg:        'bg-slate-800',
-    border:    'border-amber-500/30',
-    title:     'text-slate-100',
+    icon:      AlertTriangle,
+    bar:       'bg-[#B45309]',
+    iconBg:    'bg-[#FFFBEB]',
+    iconColor: 'text-[#B45309]',
+    bg:        'bg-white',
+    border:    'border-[#FDE68A]',
   },
   info: {
-    icon: Info,
-    bar:       'bg-blue-500',
-    iconColor: 'text-blue-400',
-    bg:        'bg-slate-800',
-    border:    'border-blue-500/30',
-    title:     'text-slate-100',
+    icon:      Info,
+    bar:       'bg-blue-600',
+    iconBg:    'bg-blue-50',
+    iconColor: 'text-blue-600',
+    bg:        'bg-white',
+    border:    'border-blue-200',
   },
 }
 
-/* ─── Individual toast item ──────────────────────────────────────────────────── */
 function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
-  const conf = TOAST_CONFIG[t.type]
-  const Icon = conf.icon
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const conf   = TOAST_CONFIG[t.type]
+  const Icon   = conf.icon
+  const timer  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const duration = t.duration ?? 4000
-    timerRef.current = setTimeout(() => onDismiss(t.id), duration)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+    timer.current = setTimeout(() => onDismiss(t.id), t.duration ?? 4500)
+    return () => { if (timer.current) clearTimeout(timer.current) }
   }, [t.id, t.duration, onDismiss])
 
   return (
@@ -99,24 +80,26 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: stri
       aria-live="assertive"
       aria-atomic="true"
       className={cn(
-        'toast-enter relative w-80 rounded-xl border shadow-xl shadow-black/40 overflow-hidden',
+        'toast-enter relative w-80 rounded-2xl border shadow-lg shadow-[#1F2937]/8 overflow-hidden',
         conf.bg, conf.border
       )}
     >
-      {/* Coloured leading bar */}
-      <div className={cn('absolute left-0 top-0 bottom-0 w-1 rounded-l-xl', conf.bar)} aria-hidden="true" />
+      {/* Left colour bar */}
+      <div className={cn('absolute left-0 top-0 bottom-0 w-1.5', conf.bar)} aria-hidden="true" />
 
-      <div className="flex items-start gap-3 px-4 py-3 pl-5">
-        <Icon className={cn('h-4 w-4 mt-0.5 shrink-0', conf.iconColor)} aria-hidden="true" />
+      <div className="flex items-start gap-3 px-4 py-3.5 pl-5">
+        <div className={cn('shrink-0 h-7 w-7 rounded-full flex items-center justify-center mt-0.5', conf.iconBg)}>
+          <Icon className={cn('h-4 w-4', conf.iconColor)} aria-hidden="true" />
+        </div>
         <div className="flex-1 min-w-0">
-          <p className={cn('text-sm font-medium', conf.title)}>{t.message}</p>
+          <p className="text-sm font-semibold text-[#1F2937]">{t.message}</p>
           {t.description && (
-            <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{t.description}</p>
+            <p className="text-xs text-[#4B5563] mt-0.5 leading-relaxed">{t.description}</p>
           )}
         </div>
         <button
           onClick={() => onDismiss(t.id)}
-          className="shrink-0 p-0.5 rounded text-slate-500 hover:text-slate-300 transition-colors"
+          className="shrink-0 p-1 rounded-lg text-[#9CA3AF] hover:text-[#4B5563] hover:bg-[#F3F0EB] transition-colors"
           aria-label="Dismiss notification"
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -126,7 +109,6 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: stri
   )
 }
 
-/* ─── Provider ───────────────────────────────────────────────────────────────── */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
@@ -136,14 +118,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const toast = useCallback((opts: Omit<Toast, 'id'>) => {
     const id = crypto.randomUUID()
-    setToasts(prev => [...prev.slice(-4), { ...opts, id }]) // cap at 5
+    setToasts(prev => [...prev.slice(-4), { ...opts, id }])
   }, [])
 
   return (
     <ToastContext.Provider value={{ toast, dismiss }}>
       {children}
-
-      {/* Toast stack — bottom-right */}
       <div
         className="fixed bottom-6 right-6 z-[200] flex flex-col gap-2 pointer-events-none"
         aria-label="Notifications"

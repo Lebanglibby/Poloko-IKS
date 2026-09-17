@@ -9,7 +9,6 @@ import type { AccessTier } from '@/lib/types'
 interface Props {
   entryId: string
   tier?: AccessTier
-  /** If false, show sign-in prompt instead of form */
   isAuthenticated?: boolean
 }
 
@@ -18,7 +17,6 @@ export function AccessRequestForm({ entryId, tier = 'restricted', isAuthenticate
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const { toast } = useToast()
-
   const isSacred = tier === 'sacred'
 
   async function handleSubmit(e: React.FormEvent) {
@@ -26,7 +24,7 @@ export function AccessRequestForm({ entryId, tier = 'restricted', isAuthenticate
     setState('loading')
     setErrorMsg(null)
     try {
-      const res = await fetch('/api/access', {
+      const res  = await fetch('/api/access', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entry_id: entryId, justification: justification.trim() || null }),
@@ -43,11 +41,11 @@ export function AccessRequestForm({ entryId, tier = 'restricted', isAuthenticate
         type: 'success',
         message: 'Access request submitted',
         description: isSacred
-          ? 'The Elder Board will review your request.'
-          : 'You will be notified when reviewed.',
+          ? 'The Elder Board will review your request soon.'
+          : 'You will be notified when your request is reviewed.',
       })
     } catch {
-      const msg = 'An unexpected error occurred.'
+      const msg = 'An unexpected error occurred. Please try again.'
       setErrorMsg(msg)
       setState('error')
       toast({ type: 'error', message: msg })
@@ -57,25 +55,30 @@ export function AccessRequestForm({ entryId, tier = 'restricted', isAuthenticate
   if (!isAuthenticated) {
     return (
       <div className={cn(
-        'rounded-xl border p-4 text-center',
-        isSacred
-          ? 'border-red-500/20 bg-red-500/5'
-          : 'border-amber-500/20 bg-amber-500/5'
+        'rounded-2xl border p-5 text-center',
+        isSacred ? 'border-[#FECACA] bg-[#FEF2F2]' : 'border-[#FDE68A] bg-[#FFFBEB]'
       )}>
-        <Lock className={cn('h-5 w-5 mx-auto mb-2', isSacred ? 'text-red-400' : 'text-amber-400')} aria-hidden="true" />
-        <p className="text-xs text-slate-300 mb-3">
-          Sign in to request access to this {isSacred ? 'sacred' : 'restricted'} entry.
+        <div className={cn(
+          'h-10 w-10 rounded-full mx-auto mb-3 flex items-center justify-center',
+          isSacred ? 'bg-[#FEE2E2]' : 'bg-[#FEF3C7]'
+        )}>
+          {isSacred
+            ? <Shield className="h-5 w-5 text-[#B91C1C]" aria-hidden="true" />
+            : <Lock className="h-5 w-5 text-[#B45309]" aria-hidden="true" />
+          }
+        </div>
+        <p className="text-sm font-semibold text-[#1F2937] mb-1">Sign in to request access</p>
+        <p className="text-sm text-[#4B5563] mb-4">
+          You need an account to request access to this {isSacred ? 'sacred' : 'restricted'} entry.
         </p>
         <a
           href="/login"
           className={cn(
-            'inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors',
-            isSacred
-              ? 'bg-red-600 hover:bg-red-500 text-white'
-              : 'bg-amber-600 hover:bg-amber-500 text-white'
+            'inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white transition-colors shadow-sm',
+            isSacred ? 'bg-[#B91C1C] hover:bg-[#991B1B]' : 'bg-[#9A3412] hover:bg-[#7C2D12]'
           )}
         >
-          Sign In
+          Sign In to Continue
         </a>
       </div>
     )
@@ -83,79 +86,86 @@ export function AccessRequestForm({ entryId, tier = 'restricted', isAuthenticate
 
   if (state === 'done') {
     return (
-      <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
-        <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-        Request submitted — awaiting{isSacred ? ' Elder Board' : ''} review.
+      <div className="flex items-center gap-3 rounded-2xl border border-[#BBF7D0] bg-[#F0FDF4] p-4">
+        <div className="h-9 w-9 rounded-full bg-[#DCFCE7] flex items-center justify-center shrink-0">
+          <CheckCircle2 className="h-5 w-5 text-[#15803D]" aria-hidden="true" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-[#14532D]">Request submitted successfully</p>
+          <p className="text-xs text-[#15803D] mt-0.5">
+            {isSacred ? 'The Elder Board will review your request.' : 'You will be notified within 48 hours.'}
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3" aria-label="Request access form">
-      {/* Tier warning banner */}
+    <form onSubmit={handleSubmit} className="space-y-4" aria-label="Request access form">
+      {/* Tier info */}
       <div className={cn(
-        'flex items-start gap-2.5 rounded-xl border px-3 py-2.5',
-        isSacred
-          ? 'border-red-500/20 bg-red-500/5'
-          : 'border-amber-500/20 bg-amber-500/5'
+        'flex items-start gap-3 rounded-2xl border p-4',
+        isSacred ? 'border-[#FECACA] bg-[#FEF2F2]' : 'border-[#FDE68A] bg-[#FFFBEB]'
       )}>
-        {isSacred
-          ? <Shield className="h-4 w-4 text-red-400 mt-0.5 shrink-0" aria-hidden="true" />
-          : <Lock className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" aria-hidden="true" />
-        }
+        <div className={cn(
+          'shrink-0 h-8 w-8 rounded-full flex items-center justify-center',
+          isSacred ? 'bg-[#FEE2E2]' : 'bg-[#FEF3C7]'
+        )}>
+          {isSacred
+            ? <Shield className="h-4 w-4 text-[#B91C1C]" aria-hidden="true" />
+            : <Lock className="h-4 w-4 text-[#B45309]" aria-hidden="true" />
+          }
+        </div>
         <div>
-          <p className={cn('text-xs font-semibold', isSacred ? 'text-red-300' : 'text-amber-300')}>
-            {isSacred ? 'Elder Board Approval Required' : 'Restricted Access'}
+          <p className={cn('text-sm font-bold', isSacred ? 'text-[#7F1D1D]' : 'text-[#78350F]')}>
+            {isSacred ? 'Elder Board Approval Required' : 'Restricted Access Entry'}
           </p>
-          <p className="text-[10px] text-slate-400 mt-0.5">
+          <p className={cn('text-xs mt-1 leading-relaxed', isSacred ? 'text-[#B91C1C]' : 'text-[#B45309]')}>
             {isSacred
-              ? 'This entry is protected under community sovereignty. Your request will be reviewed by the Elder Board before any access is granted.'
-              : 'Provide a justification for your request. Approved researchers and community members will be notified within 48 hours.'
+              ? 'This knowledge is protected under community sovereignty. Your request will be carefully reviewed by the Elder Board before any access is granted.'
+              : 'Please provide a reason for your access request. Researchers and community members will be reviewed within 48 hours.'
             }
           </p>
         </div>
       </div>
 
-      {/* Justification textarea */}
+      {/* Justification */}
       <div>
-        <label
-          htmlFor={`justification-${entryId}`}
-          className="block text-xs font-medium text-slate-300 mb-1.5"
-        >
-          Justification{' '}
-          <span className="text-slate-500 font-normal">(optional)</span>
+        <label htmlFor={`just-${entryId}`} className="block text-sm font-semibold text-[#1F2937] mb-1.5">
+          Why do you need access?{' '}
+          <span className="font-normal text-[#9CA3AF]">(optional but recommended)</span>
         </label>
         <textarea
-          id={`justification-${entryId}`}
+          id={`just-${entryId}`}
           rows={3}
           value={justification}
           onChange={e => setJustification(e.target.value)}
-          placeholder="Briefly explain why you need access to this entry…"
-          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all resize-none"
+          placeholder="Briefly explain your purpose or affiliation…"
+          className="w-full border-2 border-[#E8DDD0] rounded-xl px-4 py-3 text-sm text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:border-[#9A3412] transition-colors resize-none bg-white"
         />
       </div>
 
       {state === 'error' && errorMsg && (
-        <p className="text-xs text-red-400" role="alert">{errorMsg}</p>
+        <p className="text-sm text-red-600 font-medium" role="alert">{errorMsg}</p>
       )}
 
       <button
         type="submit"
         disabled={state === 'loading'}
         className={cn(
-          'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all',
+          'w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all shadow-sm',
           'disabled:opacity-60 disabled:cursor-not-allowed',
           isSacred
-            ? 'bg-red-600 hover:bg-red-500 text-white'
-            : 'bg-amber-600 hover:bg-amber-500 text-white'
+            ? 'bg-[#B91C1C] hover:bg-[#991B1B] text-white'
+            : 'bg-[#9A3412] hover:bg-[#7C2D12] text-white'
         )}
         aria-busy={state === 'loading'}
       >
         {state === 'loading'
-          ? <><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> Submitting…</>
+          ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Submitting…</>
           : isSacred
-          ? <><Shield className="h-3.5 w-3.5" aria-hidden="true" /> Submit to Elder Board</>
-          : <><Lock className="h-3.5 w-3.5" aria-hidden="true" /> Request Access</>
+          ? <><Shield className="h-4 w-4" aria-hidden="true" /> Submit to Elder Board</>
+          : <><Lock className="h-4 w-4" aria-hidden="true" /> Request Access</>
         }
       </button>
     </form>
