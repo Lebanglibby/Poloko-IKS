@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-# Poloko-IKS
-Poloko IKS is an open-source web platform that digitizes, protects, and empowers innovation around Botswana's indigenous knowledge systems (IKS).
-=======
+
 # 🌿 Poloko IKS
 ### Indigenous Knowledge Vault & Research Innovation System
 
@@ -163,7 +160,7 @@ This project is open-source under the [MIT License](LICENSE).
 ---
 
 ## Contributing
-
+ 
 This project was built for the Track 04 Hackathon. Contributions welcome post-hackathon. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---

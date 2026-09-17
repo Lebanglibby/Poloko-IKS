@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Loader2 } from 'lucide-react'
+import { Download, Loader2 } from 'lucide-react'
 
 interface Props {
   listingId: string
@@ -15,7 +15,6 @@ export function DownloadButton({ listingId, documentUrl, isFree }: Props) {
   async function handleDownload() {
     setLoading(true)
     try {
-      // Record the download event (fire-and-forget is fine, but we await for accuracy)
       await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,7 +22,6 @@ export function DownloadButton({ listingId, documentUrl, isFree }: Props) {
       })
     } finally {
       setLoading(false)
-      // Open the document in a new tab
       window.open(documentUrl, '_blank', 'noopener,noreferrer')
     }
   }
@@ -32,14 +30,13 @@ export function DownloadButton({ listingId, documentUrl, isFree }: Props) {
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors disabled:opacity-60"
+      className="w-full flex items-center justify-center gap-2 bg-[#9A3412] hover:bg-[#7C2D12] text-white py-3 rounded-xl text-sm font-bold transition-colors disabled:opacity-60 shadow-sm"
+      aria-busy={loading}
     >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <FileText className="h-4 w-4" />
-      )}
-      {isFree ? 'Download Free' : 'Purchase & Download'}
+      {loading
+        ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Preparing…</>
+        : <><Download className="h-4 w-4" aria-hidden="true" /> {isFree ? 'Download Free' : 'Purchase & Download'}</>
+      }
     </button>
   )
 }

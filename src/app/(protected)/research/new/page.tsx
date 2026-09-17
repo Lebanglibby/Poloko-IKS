@@ -6,21 +6,27 @@ import { Navbar } from '@/components/shared/Navbar'
 import { generateEntryHash } from '@/lib/hash'
 import { LICENSE_TYPE_LABELS } from '@/lib/constants'
 import type { LicenseType, ListingStatus } from '@/lib/types'
-import { Shield, Loader2, CheckCircle2, FlaskConical } from 'lucide-react'
+import { Shield, Loader2, CheckCircle2, FlaskConical, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+
+const STATUS_OPTIONS: { value: ListingStatus; label: string; desc: string }[] = [
+  { value: 'draft',                   label: 'Save as Draft',              desc: 'Only you can see this — not yet published.'        },
+  { value: 'published',               label: 'Publish',                    desc: 'Visible to all users immediately.'                 },
+  { value: 'open_for_collaboration',  label: 'Open for Collaboration',     desc: 'Published and accepting contributors.'             },
+]
 
 export default function NewResearchPage() {
   const router = useRouter()
-
-  const [title, setTitle] = useState('')
-  const [abstract, setAbstract] = useState('')
-  const [status, setStatus] = useState<ListingStatus>('draft')
-  const [licenseType, setLicenseType] = useState<LicenseType>('cc_by')
-  const [price, setPrice] = useState('0')
-  const [tags, setTags] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [title,         setTitle]         = useState('')
+  const [abstract,      setAbstract]      = useState('')
+  const [status,        setStatus]        = useState<ListingStatus>('draft')
+  const [licenseType,   setLicenseType]   = useState<LicenseType>('cc_by')
+  const [price,         setPrice]         = useState('0')
+  const [tags,          setTags]          = useState('')
+  const [loading,       setLoading]       = useState(false)
+  const [error,         setError]         = useState<string | null>(null)
   const [generatedHash, setGeneratedHash] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [success,       setSuccess]       = useState(false)
 
   const isCommercial = licenseType === 'commercial' || licenseType === 'custom'
 
@@ -30,36 +36,22 @@ export default function NewResearchPage() {
     setError(null)
 
     try {
-      // Generate SHA-256 hash for the research listing
-      const hash = await generateEntryHash({
-        title,
-        description: abstract,
-        submittedBy: 'researcher',
-      })
+      const hash = await generateEntryHash({ title, description: abstract, submittedBy: 'researcher' })
       setGeneratedHash(hash)
 
       const res = await fetch('/api/research', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
-          abstract,
-          status,
+          title, abstract, status,
           license_type: licenseType,
           price: isCommercial ? parseFloat(price) || 0 : 0,
           tags: tags.split(',').map(t => t.trim()).filter(Boolean),
           sha256_hash: hash,
         }),
       })
-
       const json = await res.json()
-
-      if (!res.ok) {
-        setError(json.error ?? 'Failed to publish listing')
-        setLoading(false)
-        return
-      }
-
+      if (!res.ok) { setError(json.error ?? 'Failed to publish'); setLoading(false); return }
       setSuccess(true)
       setTimeout(() => router.push(`/research/${json.data.id}`), 1500)
     } catch {
@@ -70,105 +62,124 @@ export default function NewResearchPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <CheckCircle2 className="h-12 w-12 text-blue-600 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900">Research listing created!</h2>
-          <p className="text-sm text-gray-500 mt-1">Redirecting…</p>
+      <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
+        <div className="text-center bg-white border border-[#E8DDD0] rounded-2xl p-12 shadow-sm max-w-sm mx-4">
+          <div className="h-16 w-16 rounded-full bg-[#F0FDF4] border border-[#BBF7D0] flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="h-8 w-8 text-[#15803D]" aria-hidden="true" />
+          </div>
+          <h2 className="text-xl font-bold text-[#1F2937] mb-2">Research listing created!</h2>
+          <p className="text-sm text-[#9CA3AF]">Taking you to your listing now…</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#FDFBF7]">
       <Navbar />
 
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <div className="flex items-center gap-2 mb-2">
-          <FlaskConical className="h-5 w-5 text-blue-700" />
-          <h1 className="text-2xl font-bold text-gray-900">Publish Research</h1>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+        <Link href="/research" className="inline-flex items-center gap-1.5 text-sm text-[#9CA3AF] hover:text-[#9A3412] mb-6 transition-colors">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to Research Hub
+        </Link>
+
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-10 w-10 rounded-xl bg-[#FEF2E8] border border-[#FDBA74] flex items-center justify-center">
+            <FlaskConical className="h-5 w-5 text-[#9A3412]" aria-hidden="true" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[#1F2937]">Publish Research</h1>
+            <p className="text-sm text-[#9CA3AF]">Share your study with the Poloko IKS community</p>
+          </div>
         </div>
-        <p className="text-sm text-gray-500 mb-8">
-          Publish your compiled study, product formulation, or technical framework.
-          Set your license terms and start tracking usage and attribution.
+        <p className="text-sm text-[#4B5563] mb-7 leading-relaxed">
+          Publish your compiled study, formulation, or technical framework. Set your license terms
+          and start tracking usage and attribution automatically.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-2xl border border-[#E8DDD0] p-6 sm:p-8 shadow-sm">
+
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Title <span className="text-red-500">*</span>
+            <label htmlFor="title" className="block text-sm font-bold text-[#1F2937] mb-1.5">
+              Title <span className="text-red-500" aria-hidden="true">*</span>
             </label>
             <input
+              id="title"
               required
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-2 border-[#E8DDD0] rounded-xl px-4 py-3 text-sm text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:border-[#9A3412] transition-colors"
               placeholder="e.g. Anti-inflammatory Properties of Morula Bark Extracts"
             />
           </div>
 
           {/* Abstract */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Abstract</label>
+            <label htmlFor="abstract" className="block text-sm font-bold text-[#1F2937] mb-1.5">Abstract</label>
             <textarea
+              id="abstract"
               rows={6}
               value={abstract}
               onChange={e => setAbstract(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder="Summarise your research methodology, key findings, and implications for indigenous knowledge application…"
+              className="w-full border-2 border-[#E8DDD0] rounded-xl px-4 py-3 text-sm text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:border-[#9A3412] transition-colors resize-none"
+              placeholder="Summarise your research methodology, key findings, and implications…"
             />
           </div>
 
-          {/* Status */}
+          {/* Publication status */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Publication Status</label>
-            <select
-              value={status}
-              onChange={e => setStatus(e.target.value as ListingStatus)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="draft">Draft (private, not visible yet)</option>
-              <option value="published">Published (public)</option>
-              <option value="open_for_collaboration">Open for Collaboration</option>
-            </select>
+            <p className="text-sm font-bold text-[#1F2937] mb-2">Publication Status</p>
+            <div className="grid sm:grid-cols-3 gap-3" role="radiogroup">
+              {STATUS_OPTIONS.map(opt => {
+                const active = status === opt.value
+                return (
+                  <label key={opt.value}
+                    className={`flex flex-col gap-1.5 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      active ? 'border-[#9A3412] bg-[#FEF9F0]' : 'border-[#E8DDD0] bg-white hover:border-[#D4C4B0]'
+                    }`}>
+                    <input type="radio" name="status" value={opt.value} checked={active}
+                      onChange={() => setStatus(opt.value)} className="sr-only" />
+                    <p className={`text-sm font-bold ${active ? 'text-[#9A3412]' : 'text-[#1F2937]'}`}>{opt.label}</p>
+                    <p className="text-xs text-[#9CA3AF] leading-snug">{opt.desc}</p>
+                  </label>
+                )
+              })}
+            </div>
           </div>
 
           {/* License */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">License Type</label>
+            <label htmlFor="license" className="block text-sm font-bold text-[#1F2937] mb-1.5">License Type</label>
             <select
+              id="license"
               value={licenseType}
               onChange={e => setLicenseType(e.target.value as LicenseType)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border-2 border-[#E8DDD0] rounded-xl px-4 py-3 text-sm text-[#1F2937] bg-white focus:outline-none focus:border-[#9A3412] transition-colors"
             >
               {(Object.entries(LICENSE_TYPE_LABELS) as [LicenseType, string][]).map(([val, label]) => (
                 <option key={val} value={val}>{label}</option>
               ))}
             </select>
-            <p className="text-xs text-gray-400 mt-1">
-              {!isCommercial
-                ? 'Open license — free for reuse under the selected terms'
-                : 'Commercial license — set your price below'}
+            <p className="text-xs text-[#9CA3AF] mt-1.5">
+              {isCommercial ? 'Commercial — set your access price below.' : 'Open license — free for reuse under the selected terms.'}
             </p>
           </div>
 
-          {/* Price (commercial only) */}
+          {/* Price */}
           {isCommercial && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Price (BWP)
-              </label>
+              <label htmlFor="price" className="block text-sm font-bold text-[#1F2937] mb-1.5">Price (BWP)</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">BWP</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-[#9CA3AF]">BWP</span>
                 <input
+                  id="price"
                   type="number"
                   min="0"
                   step="0.01"
                   value={price}
                   onChange={e => setPrice(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg pl-12 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border-2 border-[#E8DDD0] rounded-xl pl-14 pr-4 py-3 text-sm text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:border-[#9A3412] transition-colors"
                   placeholder="0.00"
                 />
               </div>
@@ -177,40 +188,39 @@ export default function NewResearchPage() {
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Tags <span className="text-gray-400 font-normal">(comma-separated)</span>
+            <label htmlFor="tags" className="block text-sm font-bold text-[#1F2937] mb-1.5">
+              Keywords <span className="font-normal text-[#9CA3AF]">(comma-separated)</span>
             </label>
             <input
+              id="tags"
               value={tags}
               onChange={e => setTags(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="ethnobotany, morula, anti-inflammatory, Kalahari"
+              className="w-full border-2 border-[#E8DDD0] rounded-xl px-4 py-3 text-sm text-[#1F2937] placeholder-[#9CA3AF] focus:outline-none focus:border-[#9A3412] transition-colors"
+              placeholder="ethnobotany, morula, anti-inflammatory"
             />
           </div>
 
-          {/* Hash display */}
+          {/* Hash preview */}
           {generatedHash && (
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Shield className="h-4 w-4 text-blue-700" />
-                <span className="text-sm font-medium text-blue-800">Proof of Authorship Generated</span>
+            <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="h-4 w-4 text-[#15803D]" aria-hidden="true" />
+                <span className="text-sm font-bold text-[#14532D]">Authorship record created</span>
               </div>
-              <p className="text-xs text-blue-700 font-mono break-all">{generatedHash}</p>
+              <p className="text-xs text-[#15803D] font-mono break-all">{generatedHash}</p>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg px-4 py-3">
-              {error}
-            </div>
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3" role="alert">{error}</div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-700 text-white py-3 rounded-lg font-medium hover:bg-blue-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="w-full bg-[#9A3412] hover:bg-[#7C2D12] text-white py-3.5 rounded-xl font-bold transition-colors disabled:opacity-60 flex items-center justify-center gap-2 shadow-sm text-sm"
           >
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
             {loading ? 'Publishing…' : 'Publish Research Listing'}
           </button>
         </form>

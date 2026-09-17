@@ -1,31 +1,40 @@
 import Link from 'next/link'
-import { Leaf } from 'lucide-react'
+import { Leaf, ArrowRight } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-green-50 flex items-center justify-center px-6">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Leaf className="h-8 w-8 text-green-600" />
-        </div>
-        <h1 className="text-4xl font-bold text-green-900 mb-2">404</h1>
-        <h2 className="text-xl font-semibold text-gray-700 mb-3">Page not found</h2>
-        <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto">
-          This page doesn&apos;t exist. It may have been moved, or the knowledge entry you&apos;re looking for requires access approval.
-        </p>
-        <div className="flex flex-wrap gap-3 justify-center">
-          <Link
-            href="/"
-            className="bg-green-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-green-800 transition-colors"
-          >
-            Go home
-          </Link>
-          <Link
-            href="/vault"
-            className="border border-green-200 text-green-700 px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
-          >
-            Browse the Vault
-          </Link>
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
+      {/* Simple top bar */}
+      <div className="border-b border-[#E8DDD0] bg-white px-6 py-4">
+        <Link href="/" className="flex items-center gap-2.5 w-fit">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#9A3412]">
+            <Leaf className="h-4 w-4 text-white" aria-hidden="true" />
+          </span>
+          <span className="font-bold text-[#9A3412]">Poloko IKS</span>
+        </Link>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-4 py-16">
+        <div className="text-center max-w-md">
+          <div className="h-20 w-20 bg-[#FEF2E8] border border-[#FDBA74] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <Leaf className="h-10 w-10 text-[#9A3412]" aria-hidden="true" />
+          </div>
+          <h1 className="text-6xl font-bold text-[#9A3412] mb-3">404</h1>
+          <h2 className="text-xl font-bold text-[#1F2937] mb-3">Page not found</h2>
+          <p className="text-[#4B5563] text-sm leading-relaxed mb-8">
+            This page doesn&apos;t exist or may have moved. If you were looking for
+            a knowledge entry, it may require access approval to view.
+          </p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link href="/"
+              className="flex items-center gap-2 bg-[#9A3412] hover:bg-[#7C2D12] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shadow-sm">
+              Go to Home <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link href="/vault"
+              className="flex items-center gap-2 border-2 border-[#E8DDD0] text-[#4B5563] px-5 py-2.5 rounded-xl text-sm font-bold hover:border-[#9A3412] hover:text-[#9A3412] transition-colors">
+              Browse the Archive
+            </Link>
+          </div>
         </div>
       </div>
     </div>

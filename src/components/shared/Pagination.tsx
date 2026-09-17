@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 interface Props {
   page: number
   totalPages: number
-  /** Build the href for a given page number — caller injects current search params */
   buildHref: (page: number) => string
 }
 
@@ -15,50 +14,39 @@ export function Pagination({ page, totalPages, buildHref }: Props) {
   const hasPrev = page > 1
   const hasNext = page < totalPages
 
-  // Show a window of up to 5 page numbers centred on the current page
-  const window = 2
-  const start = Math.max(1, page - window)
-  const end = Math.min(totalPages, page + window)
-  const pageNumbers = Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  const win   = 2
+  const start = Math.max(1, page - win)
+  const end   = Math.min(totalPages, page + win)
+  const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i)
+
+  const base    = 'flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium border-2 transition-all'
+  const active  = 'border-[#9A3412] bg-[#9A3412] text-white shadow-sm'
+  const normal  = 'border-[#E8DDD0] text-[#4B5563] bg-white hover:border-[#9A3412] hover:text-[#9A3412]'
+  const disabled = 'border-transparent text-[#D4C4B0] pointer-events-none'
 
   return (
-    <nav
-      className="flex items-center justify-center gap-1 mt-8"
-      aria-label="Pagination"
-    >
+    <nav className="flex items-center justify-center gap-1.5 mt-8" aria-label="Pagination">
       <Link
         href={hasPrev ? buildHref(page - 1) : '#'}
         aria-disabled={!hasPrev}
-        className={cn(
-          'flex items-center gap-1 px-3 py-2 rounded-lg text-sm border transition-colors',
-          hasPrev
-            ? 'border-gray-200 text-gray-600 hover:bg-gray-50'
-            : 'border-transparent text-gray-300 pointer-events-none'
-        )}
+        aria-label="Previous page"
+        className={cn(base, hasPrev ? normal : disabled)}
       >
-        <ChevronLeft className="h-4 w-4" />
-        Prev
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Prev
       </Link>
 
       {start > 1 && (
         <>
-          <Link href={buildHref(1)} className="px-3 py-2 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
-            1
-          </Link>
-          {start > 2 && <span className="px-2 text-gray-400 text-sm">…</span>}
+          <Link href={buildHref(1)} className={cn(base, normal)}>1</Link>
+          {start > 2 && <span className="px-1 text-[#D4C4B0] text-sm">…</span>}
         </>
       )}
 
-      {pageNumbers.map(n => (
+      {pages.map(n => (
         <Link
           key={n}
           href={buildHref(n)}
-          className={cn(
-            'px-3 py-2 rounded-lg text-sm border transition-colors',
-            n === page
-              ? 'border-green-600 bg-green-600 text-white font-medium'
-              : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-          )}
+          className={cn(base, n === page ? active : normal)}
           aria-current={n === page ? 'page' : undefined}
         >
           {n}
@@ -67,25 +55,18 @@ export function Pagination({ page, totalPages, buildHref }: Props) {
 
       {end < totalPages && (
         <>
-          {end < totalPages - 1 && <span className="px-2 text-gray-400 text-sm">…</span>}
-          <Link href={buildHref(totalPages)} className="px-3 py-2 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
-            {totalPages}
-          </Link>
+          {end < totalPages - 1 && <span className="px-1 text-[#D4C4B0] text-sm">…</span>}
+          <Link href={buildHref(totalPages)} className={cn(base, normal)}>{totalPages}</Link>
         </>
       )}
 
       <Link
         href={hasNext ? buildHref(page + 1) : '#'}
         aria-disabled={!hasNext}
-        className={cn(
-          'flex items-center gap-1 px-3 py-2 rounded-lg text-sm border transition-colors',
-          hasNext
-            ? 'border-gray-200 text-gray-600 hover:bg-gray-50'
-            : 'border-transparent text-gray-300 pointer-events-none'
-        )}
+        aria-label="Next page"
+        className={cn(base, hasNext ? normal : disabled)}
       >
-        Next
-        <ChevronRight className="h-4 w-4" />
+        Next <ChevronRight className="h-4 w-4" aria-hidden="true" />
       </Link>
     </nav>
   )

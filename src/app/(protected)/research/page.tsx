@@ -20,17 +20,16 @@ export default async function ResearchPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const params = await searchParams
+  const params   = await searchParams
   const supabase = await createClient()
-  const page = Math.max(1, parseInt(params.page ?? '1', 10))
-  const offset = (page - 1) * PAGE_SIZE
+  const page     = Math.max(1, parseInt(params.page ?? '1', 10))
+  const offset   = (page - 1) * PAGE_SIZE
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = user
+  const { data: profile }  = user
     ? await supabase.from('profiles').select('role').eq('id', user.id).single()
     : { data: null }
 
-  /* Fetch pending access request count for notification bell */
   const { count: pendingCount } = user && profile?.role === 'admin'
     ? await supabase
         .from('access_requests')
@@ -38,10 +37,12 @@ export default async function ResearchPage({
         .eq('status', 'pending')
     : { count: 0 }
 
-  /* Main listings query */
   let query = supabase
     .from('research_listings')
-    .select('*, profiles(full_name, community), collaborators:research_collaborators(id, collaborator_id, contribution, credit_share, joined_at, profiles(full_name))', { count: 'exact' })
+    .select(
+      '*, profiles(full_name, community), collaborators:research_collaborators(id, collaborator_id, contribution, credit_share, joined_at, profiles(full_name))',
+      { count: 'exact' }
+    )
     .neq('status', 'draft')
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
@@ -53,7 +54,6 @@ export default async function ResearchPage({
   const { data: listings, error, count } = await query
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
-  /* Geo-tagged vault entries for the map panel */
   const { data: mapEntries } = await supabase
     .from('knowledge_entries')
     .select('id, title, category, access_tier, latitude, longitude, verified')
@@ -62,27 +62,23 @@ export default async function ResearchPage({
     .limit(200)
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      <Navbar
-        userRole={profile?.role}
-        pendingNotifications={pendingCount ?? 0}
-      />
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
+      <Navbar userRole={profile?.role} pendingNotifications={pendingCount ?? 0} />
 
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <header className="border-b border-slate-700/60 bg-slate-900/80 backdrop-blur-sm px-4 sm:px-6 py-5">
+      <header className="border-b border-[#E8DDD0] bg-white px-4 sm:px-6 py-6">
         <div className="max-w-screen-xl mx-auto flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-7 w-7 flex items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/25">
-                <FlaskConical className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+            <div className="flex items-center gap-3 mb-1">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#FEF2E8] border border-[#FDBA74]">
+                <FlaskConical className="h-5 w-5 text-[#9A3412]" aria-hidden="true" />
               </div>
-              <h1 className="text-lg font-bold text-slate-100">Research Hub</h1>
-              <span className="text-xs font-medium text-slate-500 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full">
-                Module 2
-              </span>
+              <div>
+                <h1 className="text-xl font-bold text-[#1F2937]">Research Hub</h1>
+                <p className="text-sm text-[#9CA3AF]">Published studies & collaborative research</p>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
-              Published studies, licensed datasets, and collaborative research pipelines
+            <p className="text-sm text-[#4B5563] max-w-lg mt-2 leading-relaxed">
+              Browse published studies, licensed datasets, and open research pipelines
               derived from Botswana&apos;s indigenous knowledge systems.
             </p>
           </div>
@@ -90,7 +86,7 @@ export default async function ResearchPage({
           {profile?.role && ['researcher', 'admin'].includes(profile.role) && (
             <Link
               href="/research/new"
-              className="shrink-0 flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg transition-colors"
+              className="shrink-0 flex items-center gap-2 text-sm font-semibold bg-[#9A3412] hover:bg-[#7C2D12] text-white px-4 py-2.5 rounded-xl transition-colors shadow-sm"
             >
               + Publish Research
             </Link>
@@ -98,7 +94,6 @@ export default async function ResearchPage({
         </div>
       </header>
 
-      {/* ── Main split layout + filter bar wired in client ────────────────── */}
       <ResearchHubClient
         listings={listings ?? []}
         mapEntries={mapEntries ?? []}
