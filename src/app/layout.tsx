@@ -1,16 +1,21 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter, DM_Serif_Display } from 'next/font/google'
 import { ToastProvider } from '@/components/shared/ToastProvider'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+/* ── Body font: Inter — warm, readable, modern ── */
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+/* ── Display font: DM Serif Display — editorial, warm, expressive ── */
+const dmSerif = DM_Serif_Display({
+  variable: '--font-dm-serif',
+  weight: '400',
   subsets: ['latin'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -32,11 +37,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+    <html lang="en" className={`${inter.variable} ${dmSerif.variable}`}>
+      <body className="antialiased">
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   )

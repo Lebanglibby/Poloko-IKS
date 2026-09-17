@@ -1,155 +1,184 @@
 @import "tailwindcss";
 
-/* ─── Poloko IKS — Warm Earth Design Tokens ──────────────────────────────────
-   Philosophy: Warm, trustworthy, and accessible for all community members.
-   Feels like natural parchment and earthy heritage — not tech software.
-
-   Palette:
-     Sand background   #FDFBF7  — soft off-white, easy on the eyes outdoors
-     Surface white     #FFFFFF  — clean card surfaces
-     Surface warm      #FEF9F0  — warm tinted panels
-     Border            #E8DDD0  — gentle warm separator
-     Border strong     #D4C4B0  — slightly stronger divider
-
-     Terracotta        #9A3412  — deep Kalahari ochre, primary brand colour
-     Terracotta hover  #7C2D12  — darker hover
-     Terracotta light  #FEF2E8  — tinted background for terracotta elements
-
-     Sage green        #15803D  — verified / public / success
-     Sage light        #F0FDF4  — soft green background
-     Sage border       #BBF7D0  — green badge border
-
-     Amber warm        #B45309  — restricted / caution
-     Amber light       #FFFBEB  — soft amber background
-     Amber border      #FDE68A  — amber badge border
-
-     Red earth         #B91C1C  — sacred / important warning
-     Red light         #FEF2F2  — soft red background
-     Red border        #FECACA  — red badge border
-
-     Charcoal          #1F2937  — primary text, strong contrast
-     Grey mid          #4B5563  — secondary text
-     Grey soft         #9CA3AF  — placeholder / muted
-     Grey faint        #F3F0EB  — hover backgrounds on sand
+/* ─── Poloko IKS — Design System ─────────────────────────────────────────────
+   A warm, editorial, heritage-grade design language.
+   Inspired by Botswana's earth, kente patterns, and natural parchment.
 ────────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Surfaces */
-  --bg-base:       #FDFBF7;
-  --bg-surface:    #FFFFFF;
-  --bg-warm:       #FEF9F0;
-  --bg-hover:      #F3F0EB;
-  --border:        #E8DDD0;
-  --border-strong: #D4C4B0;
+  /* ── Surfaces ── */
+  --bg-base:         #FDFAF5;   /* parchment — slightly warmer than pure white */
+  --bg-surface:      #FFFFFF;
+  --bg-warm:         #FEF7EE;
+  --bg-muted:        #F5F0E8;
+  --border:          #E5D8C8;
+  --border-strong:   #CDB89A;
 
-  /* Brand — Terracotta */
-  --primary:       #9A3412;
-  --primary-hover: #7C2D12;
-  --primary-light: #FEF2E8;
-  --primary-border:#FDBA74;
+  /* ── Brand — Deep Terracotta ── */
+  --primary:         #8B2500;
+  --primary-mid:     #9A3412;
+  --primary-hover:   #7C1D0E;
+  --primary-light:   #FEF0E6;
+  --primary-border:  #F4A878;
 
-  /* Sage green — public / verified */
-  --green:         #15803D;
-  --green-light:   #F0FDF4;
-  --green-border:  #BBF7D0;
+  /* ── Sage green ── */
+  --green:           #166534;
+  --green-mid:       #15803D;
+  --green-light:     #F0FDF4;
+  --green-border:    #86EFAC;
 
-  /* Amber — restricted */
-  --amber:         #B45309;
-  --amber-light:   #FFFBEB;
-  --amber-border:  #FDE68A;
+  /* ── Amber ── */
+  --amber:           #92400E;
+  --amber-mid:       #B45309;
+  --amber-light:     #FFFBEB;
+  --amber-border:    #FCD34D;
 
-  /* Red — sacred */
-  --red:           #B91C1C;
-  --red-light:     #FEF2F2;
-  --red-border:    #FECACA;
+  /* ── Red earth ── */
+  --red:             #991B1B;
+  --red-light:       #FEF2F2;
+  --red-border:      #FCA5A5;
 
-  /* Text */
-  --text-primary:   #1F2937;
-  --text-secondary: #4B5563;
-  --text-muted:     #9CA3AF;
+  /* ── Text ── */
+  --text-primary:    #1A1008;   /* very warm near-black */
+  --text-body:       #3D2B1F;   /* warm brown-dark for body */
+  --text-secondary:  #6B5344;   /* warm mid-brown */
+  --text-muted:      #9C8070;   /* muted warm */
+  --text-placeholder:#B8A898;
 
-  /* Legacy */
-  --background: #FDFBF7;
-  --foreground: #1F2937;
-  --primary-dark: #7C2D12;
-  --accent: #B45309;
+  /* ── Shadows (warm-tinted) ── */
+  --shadow-xs:  0 1px 3px rgba(139, 37, 0, 0.06), 0 1px 2px rgba(139, 37, 0, 0.04);
+  --shadow-sm:  0 2px 8px rgba(139, 37, 0, 0.07), 0 1px 3px rgba(139, 37, 0, 0.05);
+  --shadow-md:  0 4px 16px rgba(139, 37, 0, 0.09), 0 2px 6px rgba(139, 37, 0, 0.06);
+  --shadow-lg:  0 8px 32px rgba(139, 37, 0, 0.11), 0 4px 12px rgba(139, 37, 0, 0.07);
+  --shadow-xl:  0 16px 48px rgba(139, 37, 0, 0.14), 0 8px 20px rgba(139, 37, 0, 0.08);
 }
 
-/* ─── Base ──────────────────────────────────────────────────────────────────── */
-html {
-  color-scheme: light;
-}
+/* ─── Base reset ─────────────────────────────────────────────────────────────── */
+html { color-scheme: light; scroll-behavior: smooth; }
 
 body {
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: var(--font-geist-sans, 'Inter', 'Public Sans', 'Arial', sans-serif);
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
-  line-height: 1.6;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.65;
 }
+
+/* ─── Heading font ───────────────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-dm-serif, 'Georgia', 'Times New Roman', serif);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Typography scale ───────────────────────────────────────────────────────── */
+h1, h2, h3 { line-height: 1.2; }
 
 /* ─── Leaflet ───────────────────────────────────────────────────────────────── */
 .leaflet-container {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #e8e0d8;
-  border-radius: 0;
+  background: #ede5d8;
 }
-
-/* Warm tint on OSM tiles — subtle sepia effect */
 .leaflet-tile-pane {
-  filter: saturate(0.85) sepia(0.12) brightness(1.02);
+  filter: saturate(0.82) sepia(0.15) brightness(1.01) contrast(0.97);
 }
-
-/* Leaflet popup styling */
 .poloko-popup .leaflet-popup-content-wrapper {
   background: #FFFFFF !important;
-  border: 1px solid #E8DDD0 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 24px rgba(154, 52, 18, 0.08) !important;
+  border: 1px solid #E5D8C8 !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-lg) !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
-.poloko-popup .leaflet-popup-content {
-  margin: 0 !important;
-}
-.poloko-popup .leaflet-popup-tip {
-  background: #FFFFFF !important;
-  border: 1px solid #E8DDD0 !important;
-}
+.poloko-popup .leaflet-popup-content { margin: 0 !important; }
+.poloko-popup .leaflet-popup-tip { background: #FFFFFF !important; }
 
-/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+/* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #F3F0EB; }
-::-webkit-scrollbar-thumb { background: #D4C4B0; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #B8A898; }
+::-webkit-scrollbar-track { background: #F5F0E8; }
+::-webkit-scrollbar-thumb { background: #CDB89A; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #B8A070; }
 
-/* ─── Focus ring — accessible, warm ────────────────────────────────────────── */
+/* ─── Focus ──────────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 3px solid #9A3412;
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 2.5px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 5px;
 }
 
-/* ─── Skeleton shimmer ──────────────────────────────────────────────────────── */
+/* ─── Utilities ──────────────────────────────────────────────────────────────── */
+
+/* Warm card shadow */
+.card-shadow { box-shadow: var(--shadow-sm); }
+.card-shadow-md { box-shadow: var(--shadow-md); }
+
+/* Hover lift with warm shadow */
+.card-lift {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.card-lift:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.card-lift:focus-visible {
+  box-shadow: var(--shadow-md);
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #8B2500 0%, #C44B1A 50%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Decorative SVG patterns ────────────────────────────────────────────────── */
+
+/* Kente-inspired dot grid for hero backgrounds */
+.bg-pattern-dots {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Subtle warm grain texture */
+.bg-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Diagonal line pattern for sections */
+.bg-pattern-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(154, 52, 18, 0.025) 10px,
+    rgba(154, 52, 18, 0.025) 11px
+  );
+}
+
+/* ─── Skeleton shimmer ───────────────────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
 }
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    #F3F0EB 25%,
-    #E8DDD0 50%,
-    #F3F0EB 75%
-  );
+  background: linear-gradient(90deg, #F0E8DC 25%, #E5D8C8 50%, #F0E8DC 75%);
   background-size: 200% 100%;
   animation: shimmer 1.8s ease-in-out infinite;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
-/* ─── Drawer slide animation ────────────────────────────────────────────────── */
+/* ─── Drawer ─────────────────────────────────────────────────────────────────── */
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
@@ -158,40 +187,107 @@ body {
   from { transform: translateX(0);    opacity: 1; }
   to   { transform: translateX(100%); opacity: 0; }
 }
-.drawer-enter { animation: slideInRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.drawer-enter { animation: slideInRight 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .drawer-exit  { animation: slideOutRight 0.22s ease-in forwards; }
 
-/* ─── Toast animation ───────────────────────────────────────────────────────── */
+/* ─── Toast ──────────────────────────────────────────────────────────────────── */
 @keyframes toastIn {
-  from { transform: translateY(12px); opacity: 0; }
+  from { transform: translateY(14px) scale(0.97); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+.toast-enter { animation: toastIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+/* ─── Hash copy pulse ────────────────────────────────────────────────────────── */
+@keyframes hashPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(22, 101, 52, 0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(22, 101, 52, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 101, 52, 0); }
+}
+.hash-copied { animation: hashPulse 0.65s ease-out; }
+
+/* ─── Map marker pulse ───────────────────────────────────────────────────────── */
+@keyframes markerPulse {
+  0%   { transform: scale(1);   }
+  50%  { transform: scale(1.7); }
+  100% { transform: scale(1);   }
+}
+.marker-selected { animation: markerPulse 0.38s ease-out; }
+
+/* ─── Hero entrance ──────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { transform: translateY(20px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
-.toast-enter { animation: toastIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-
-/* ─── Hash copy feedback ────────────────────────────────────────────────────── */
-@keyframes hashPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.4); }
-  70%  { box-shadow: 0 0 0 8px rgba(21, 128, 61, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
+.fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
-.hash-copied { animation: hashPulse 0.6s ease-out; }
+.fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.fade-up-delay-3 { animation-delay: 0.35s; opacity: 0; }
 
-/* ─── Map marker pulse ──────────────────────────────────────────────────────── */
-@keyframes markerPulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.6); }
-  100% { transform: scale(1); }
-}
-.marker-selected { animation: markerPulse 0.35s ease-out; }
+/* ─── Badge glow ─────────────────────────────────────────────────────────────── */
+.badge-glow-green  { box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.15);  }
+.badge-glow-amber  { box-shadow: 0 0 0 3px rgba(146, 64, 14, 0.15);  }
+.badge-glow-red    { box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.15);  }
 
-/* ─── Card hover lift ───────────────────────────────────────────────────────── */
-.card-lift {
-  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+/* ─── Divider ornament ───────────────────────────────────────────────────────── */
+.divider-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #CDB89A;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
 }
-.card-lift:hover {
-  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.08);
+.divider-ornament::before,
+.divider-ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #CDB89A, transparent);
+}
+
+/* ─── Input base ─────────────────────────────────────────────────────────────── */
+.input-warm {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-base);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-warm::placeholder { color: var(--text-placeholder); }
+.input-warm:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(139, 37, 0, 0.1);
+}
+
+/* ─── Button base ────────────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  border: none;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
-.card-lift:focus-within {
-  box-shadow: 0 4px 20px rgba(154, 52, 18, 0.1);
-}
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
