@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
+import { useToast } from '@/components/shared/ToastProvider'
 
 interface Props {
   entryId: string
@@ -10,6 +11,7 @@ interface Props {
 export function VerifyEntryButton({ entryId }: Props) {
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const { toast } = useToast()
 
   async function handleVerify() {
     setState('loading')
@@ -24,19 +26,23 @@ export function VerifyEntryButton({ entryId }: Props) {
       if (!res.ok) {
         setErrorMsg(json.error ?? 'Verification failed')
         setState('error')
+        toast({ type: 'error', message: json.error ?? 'Verification failed' })
         return
       }
       setState('done')
+      toast({ type: 'success', message: 'Entry verified', description: 'Your community verification has been recorded.' })
     } catch {
-      setErrorMsg('An unexpected error occurred.')
+      const msg = 'An unexpected error occurred.'
+      setErrorMsg(msg)
       setState('error')
+      toast({ type: 'error', message: msg })
     }
   }
 
   if (state === 'done') {
     return (
-      <div className="flex items-center gap-2 text-sm text-green-700 font-medium">
-        <CheckCircle2 className="h-4 w-4" />
+      <div className="flex items-center gap-2 text-xs font-medium text-emerald-400">
+        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
         Verified — thank you!
       </div>
     )
@@ -47,13 +53,17 @@ export function VerifyEntryButton({ entryId }: Props) {
       <button
         onClick={handleVerify}
         disabled={state === 'loading'}
-        className="text-xs bg-amber-600 text-white px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-60 flex items-center gap-1.5"
+        className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
+        aria-busy={state === 'loading'}
+        aria-label="Verify this knowledge entry"
       >
-        {state === 'loading' && <Loader2 className="h-3 w-3 animate-spin" />}
-        {state === 'loading' ? 'Verifying…' : 'Verify this Entry'}
+        {state === 'loading'
+          ? <><Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" /> Verifying…</>
+          : <><ShieldCheck className="h-3 w-3" aria-hidden="true" /> Verify this Entry</>
+        }
       </button>
       {state === 'error' && errorMsg && (
-        <p className="text-xs text-red-600 mt-1.5">{errorMsg}</p>
+        <p className="text-xs text-red-400 mt-1.5" role="alert">{errorMsg}</p>
       )}
     </div>
   )
