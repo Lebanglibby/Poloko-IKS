@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/shared/Navbar'
 import { VaultBrowseClient } from '@/components/vault/VaultBrowseClient'
 import { KNOWLEDGE_CATEGORY_LABELS } from '@/lib/constants'
+import { MOCK_ENTRIES, MOCK_MAP_ENTRIES, MOCK_PROFILE, filterEntries, paginate } from '@/lib/mock-data'
 import { Leaf, BookOpen } from 'lucide-react'
 import type { KnowledgeCategory, AccessTier } from '@/lib/types'
 import Link from 'next/link'
@@ -26,42 +26,26 @@ export default async function VaultPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const params   = await searchParams
-  const supabase = await createClient()
-  const page     = Math.max(1, parseInt(params.page ?? '1', 10))
-  const offset   = (page - 1) * PAGE_SIZE
+  const params = await searchParams
+  const page   = Math.max(1, parseInt(params.page ?? '1', 10))
 
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile }  = user
-    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
-    : { data: null }
+  // Mock user auth — always logged in as researcher for demo
+  const user    = MOCK_PROFILE
+  const profile = MOCK_PROFILE
 
-  const { count: pendingCount } = user && profile?.role === 'admin'
-    ? await supabase
-        .from('access_requests')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-    : { count: 0 }
+  // Mock: no pending admin requests
+  const pendingCount = 0
 
-  let query = supabase
-    .from('knowledge_entries')
-    .select('*, profiles(full_name, community)', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + PAGE_SIZE - 1)
+  // Filter + paginate mock data
+  const filtered = filterEntries(MOCK_ENTRIES, {
+    search:   params.search,
+    category: params.category,
+    tier:     params.tier,
+  })
+  const { data: entries, total: count, totalPages } = paginate(filtered, page, PAGE_SIZE)
 
-  if (params.category) query = query.eq('category', params.category)
-  if (params.tier)     query = query.eq('access_tier', params.tier)
-  if (params.search)   query = query.ilike('title', `%${params.search}%`)
-
-  const { data: entries, error, count } = await query
-  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
-
-  const { data: mapEntries } = await supabase
-    .from('knowledge_entries')
-    .select('id, title, category, access_tier, latitude, longitude, verified')
-    .not('latitude',  'is', null)
-    .not('longitude', 'is', null)
-    .limit(300)
+  // Map entries (all with coordinates)
+  const mapEntries = MOCK_MAP_ENTRIES
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
@@ -179,16 +163,16 @@ export default async function VaultPage({
       {/* ── Main content area ──────────────────────────────────────────── */}
       <main id="vault-entries" tabIndex={-1} className="flex flex-col flex-1 outline-none">
         <VaultBrowseClient
-          entries={entries ?? []}
-          mapEntries={mapEntries ?? []}
+          entries={entries}
+          mapEntries={mapEntries}
           categoryLabels={KNOWLEDGE_CATEGORY_LABELS}
-          error={error?.message}
-          totalCount={count ?? 0}
+          error={undefined}
+          totalCount={count}
           totalPages={totalPages}
           currentPage={page}
           currentFilters={{ search: params.search, category: params.category, tier: params.tier }}
-          userRole={profile?.role ?? null}
-          userId={user?.id ?? null}
+          userRole={profile.role}
+          userId={user.id}
         />
       </main>
     </div>

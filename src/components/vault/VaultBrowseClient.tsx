@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, X, Leaf, ChevronLeft, ChevronRight,
@@ -146,10 +146,27 @@ export function VaultBrowseClient({
   const [drawerOpen, setDrawerOpen]       = useState(false)
   const [mobileView, setMobileView]       = useState<'list' | 'map'>('list')
   const [filtersOpen, setFiltersOpen]     = useState(false)
+  // Optimistic items submitted this session (read from localStorage)
+  const [optimisticEntries, setOptimisticEntries] = useState<KnowledgeEntry[]>([])
 
   const [search,   setSearch]   = useState(currentFilters.search   ?? '')
   const [category, setCategory] = useState(currentFilters.category ?? '')
   const [tier,     setTier]     = useState(currentFilters.tier     ?? '')
+
+  // On mount: read any pending optimistic entry from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('poloko_pending_entry')
+      if (raw) {
+        const entry = JSON.parse(raw) as KnowledgeEntry
+        setOptimisticEntries([entry])
+        localStorage.removeItem('poloko_pending_entry')
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  // Combined list: optimistic items first, then server/mock items
+  const displayEntries = [...optimisticEntries, ...entries]
 
   /* ── URL helpers ────────────────────────────────────────────────────── */
   function buildUrl(o: { search?: string; category?: string; tier?: string; page?: number } = {}) {
@@ -190,9 +207,9 @@ export function VaultBrowseClient({
   const handleSelect  = useCallback((entry: KnowledgeEntry) => { setSelectedEntry(entry); setDrawerOpen(true) }, [])
   const handleClose   = useCallback(() => setDrawerOpen(false), [])
   const handleMapSel  = useCallback((id: string) => {
-    const match = entries.find(e => e.id === id)
+    const match = displayEntries.find(e => e.id === id)
     if (match) { setSelectedEntry(match); setDrawerOpen(true) }
-  }, [entries])
+  }, [displayEntries])
 
   /* ── Result count message for screen readers ─────────────────────── */
   const resultMsg = isPending
@@ -423,15 +440,21 @@ export function VaultBrowseClient({
             <div className="flex-1 overflow-y-auto overscroll-contain space-y-3 pr-1">
               {isPending
                 ? Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
-                : entries.length === 0
+                : displayEntries.length === 0
                 ? <EmptyState hasFilters={hasFilters} onClear={clearAll} />
-                : entries.map(entry => (
-                  <KnowledgeCard
-                    key={entry.id}
-                    entry={entry}
-                    selected={selectedEntry?.id === entry.id && drawerOpen}
-                    onSelect={handleSelect}
-                  />
+                : displayEntries.map(entry => (
+                  <div key={entry.id} className="relative">
+                    {optimisticEntries.some(o => o.id === entry.id) && (
+                      <div className="absolute -top-2 left-3 z-10 flex items-center gap-1 bg-[#15803D] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                        ✓ Just submitted
+                      </div>
+                    )}
+                    <KnowledgeCard
+                      entry={entry}
+                      selected={selectedEntry?.id === entry.id && drawerOpen}
+                      onSelect={handleSelect}
+                    />
+                  </div>
                 ))
               }
             </div>

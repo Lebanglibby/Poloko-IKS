@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/shared/Navbar'
 import { generateEntryHash } from '@/lib/hash'
 import { KNOWLEDGE_CATEGORY_LABELS } from '@/lib/constants'
-import type { KnowledgeCategory, AccessTier } from '@/lib/types'
+import type { KnowledgeCategory, AccessTier, KnowledgeEntry } from '@/lib/types'
 import {
   Shield, MapPin, Tag, Loader2, CheckCircle2,
   Globe, Lock, ArrowLeft, AlertCircle, Image as ImageIcon,
@@ -153,6 +153,31 @@ export default function SubmitPage() {
       const hash = await generateEntryHash({ title, description, submittedBy: 'user' })
       setGeneratedHash(hash)
 
+      const optimisticEntry: KnowledgeEntry = {
+        id:          `optimistic-${Date.now()}`,
+        title,
+        description,
+        category,
+        access_tier: accessTier,
+        language,
+        submitted_by: 'demo-user-0001',
+        verified:    false,
+        verified_by: null,
+        sha256_hash: hash,
+        latitude:    latitude  ? parseFloat(latitude)  : null,
+        longitude:   longitude ? parseFloat(longitude) : null,
+        tags:        tags.split(',').map(t => t.trim()).filter(Boolean),
+        media_urls:  null,
+        created_at:  new Date().toISOString(),
+        updated_at:  new Date().toISOString(),
+        profiles:    { full_name: 'Kabo Modise', community: 'University of Botswana' },
+      }
+
+      // Store optimistic entry for instant display on vault page
+      try {
+        localStorage.setItem('poloko_pending_entry', JSON.stringify(optimisticEntry))
+      } catch { /* storage unavailable — no-op */ }
+
       const res  = await fetch('/api/knowledge', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,19 +247,17 @@ export default function SubmitPage() {
             )}
 
             <div className="flex flex-col gap-2">
-              {submittedId && (
-                <a
-                  href={`/vault/${submittedId}`}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-[#9A3412] hover:bg-[#7C2D12] text-white transition-colors shadow-sm"
-                >
-                  View My Entry
-                </a>
-              )}
-              <Link
+              <a
                 href="/vault"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-[#9A3412] hover:bg-[#7C2D12] text-white transition-colors shadow-sm"
+              >
+                See My Entry in the Archive →
+              </a>
+              <Link
+                href="/dashboard"
                 className="w-full flex items-center justify-center py-3 rounded-xl text-sm font-semibold border-2 border-[#E8DDD0] text-[#4B5563] hover:border-[#9A3412] hover:text-[#9A3412] transition-colors"
               >
-                Browse the Archive
+                Back to Dashboard
               </Link>
               <button
                 onClick={() => {

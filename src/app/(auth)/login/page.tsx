@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Leaf, Loader2, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -35,8 +36,15 @@ export default function LoginPage() {
           className="flex items-center gap-2.5 w-fit group"
           aria-label="Back to Poloko IKS home"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#9A3412] group-hover:bg-[#7C2D12] transition-colors">
-            <Leaf className="h-4 w-4 text-white" aria-hidden="true" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden shadow-sm bg-[#9A3412]">
+            <Image
+              src="/poloko_logo.jpeg"
+              alt="Poloko IKS logo"
+              width={32}
+              height={32}
+              className="object-cover w-full h-full"
+              priority
+            />
           </span>
           <span className="font-bold text-[#9A3412] group-hover:text-[#7C2D12] transition-colors">
             Poloko IKS

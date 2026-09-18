@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, SlidersHorizontal, X, FlaskConical,
@@ -125,6 +125,22 @@ export function ResearchHubClient({
   const [selectedListing, setSelectedListing] = useState<ResearchListing | null>(null)
   const [drawerOpen,      setDrawerOpen]       = useState(false)
   const [mobileView,      setMobileView]       = useState<'list' | 'map'>('list')
+  // Optimistic listings submitted this session
+  const [optimisticListings, setOptimisticListings] = useState<ResearchListing[]>([])
+
+  // On mount: read any pending optimistic listing from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('poloko_pending_listing')
+      if (raw) {
+        const listing = JSON.parse(raw) as ResearchListing
+        setOptimisticListings([listing])
+        localStorage.removeItem('poloko_pending_listing')
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  const displayListings = [...optimisticListings, ...listings]
   const [filtersOpen,     setFiltersOpen]      = useState(false)
 
   const [search,      setSearch]      = useState(currentFilters.search       ?? '')
@@ -158,9 +174,9 @@ export function ResearchHubClient({
   const handleSelectListing = useCallback((listing: ResearchListing) => { setSelectedListing(listing); setDrawerOpen(true) }, [])
   const handleCloseDrawer   = useCallback(() => setDrawerOpen(false), [])
   const handleMapSelect     = useCallback((id: string) => {
-    const match = listings.find(l => l.id === id)
+    const match = displayListings.find(l => l.id === id)
     if (match) { setSelectedListing(match); setDrawerOpen(true) }
-  }, [listings])
+  }, [displayListings])
 
   const resultMsg = isPending
     ? 'Loading listings…'
@@ -343,15 +359,21 @@ export function ResearchHubClient({
             <div className="flex-1 overflow-y-auto overscroll-contain space-y-3 pr-1">
               {isPending
                 ? Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)
-                : listings.length === 0
+                : displayListings.length === 0
                 ? <EmptyState hasFilters={hasFilters} onClear={clearAll} />
-                : listings.map(l => (
-                  <ResearchCard
-                    key={l.id}
-                    listing={l}
-                    selected={selectedListing?.id === l.id && drawerOpen}
-                    onSelect={handleSelectListing}
-                  />
+                : displayListings.map(l => (
+                  <div key={l.id} className="relative">
+                    {optimisticListings.some(o => o.id === l.id) && (
+                      <div className="absolute -top-2 left-3 z-10 flex items-center gap-1 bg-[#2D6A4F] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                        ✓ Just published
+                      </div>
+                    )}
+                    <ResearchCard
+                      listing={l}
+                      selected={selectedListing?.id === l.id && drawerOpen}
+                      onSelect={handleSelectListing}
+                    />
+                  </div>
                 ))
               }
             </div>

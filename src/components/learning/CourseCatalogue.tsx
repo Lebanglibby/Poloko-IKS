@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, X, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
 import { CourseCard } from './CourseCard'
@@ -47,9 +47,24 @@ export function CourseCatalogue({
 }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [search,      setSearch]      = useState(currentFilters.search      ?? '')
+  const [search,      setSearch]      = useState(currentFilters.search ?? '')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  // Optimistic courses submitted this session
+  const [optimisticCourses, setOptimisticCourses] = useState<Course[]>([])
 
+  // On mount: read any pending optimistic course from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('poloko_pending_course')
+      if (raw) {
+        const course = JSON.parse(raw) as Course
+        setOptimisticCourses([course])
+        localStorage.removeItem('poloko_pending_course')
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  const displayCourses = [...optimisticCourses, ...courses]
   const hasFilters = !!(currentFilters.category || currentFilters.skill_level || currentFilters.search)
 
   function buildUrl(o: { category?: string; skill_level?: string; search?: string; page?: number } = {}) {
@@ -176,7 +191,7 @@ export function CourseCatalogue({
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => <CourseSkeleton key={i} />)}
         </div>
-      ) : courses.length === 0 ? (
+      ) : displayCourses.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-[#E8DDD0]">
           <p className="text-5xl mb-4" aria-hidden="true">🔍</p>
           <p className="text-base font-bold text-[#1F2937]">No courses found</p>
@@ -191,7 +206,16 @@ export function CourseCatalogue({
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {courses.map(course => <CourseCard key={course.id} course={course} />)}
+          {displayCourses.map(course => (
+            <div key={course.id} className="relative">
+              {optimisticCourses.some(o => o.id === course.id) && (
+                <div className="absolute -top-2 left-3 z-10 flex items-center gap-1 bg-[#92400E] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                  ✓ Just submitted · Pending Elder Review
+                </div>
+              )}
+              <CourseCard course={course} />
+            </div>
+          ))}
         </div>
       )}
 

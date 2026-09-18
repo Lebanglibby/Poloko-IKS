@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/shared/Navbar'
 import { ResearchHubClient } from '@/components/research/ResearchHubClient'
 import { FlaskConical, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import type { LicenseType } from '@/lib/types'
 import { LICENSE_TYPE_LABELS } from '@/lib/constants'
+import { MOCK_LISTINGS, MOCK_MAP_ENTRIES, MOCK_PROFILE, filterListings, paginate } from '@/lib/mock-data'
 
 const PAGE_SIZE = 30
 
@@ -26,52 +26,32 @@ export default async function ResearchPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const params   = await searchParams
-  const supabase = await createClient()
-  const page     = Math.max(1, parseInt(params.page ?? '1', 10))
-  const offset   = (page - 1) * PAGE_SIZE
+  const params = await searchParams
+  const page   = Math.max(1, parseInt(params.page ?? '1', 10))
 
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile }  = user
-    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
-    : { data: null }
+  // Mock user — always researcher
+  const user    = MOCK_PROFILE
+  const profile = MOCK_PROFILE
 
-  const { count: pendingCount } = user && profile?.role === 'admin'
-    ? await supabase
-        .from('access_requests')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-    : { count: 0 }
+  // Mock: no pending admin notifications
+  const pendingCount = 0
 
-  let query = supabase
-    .from('research_listings')
-    .select(
-      '*, profiles(full_name, community), collaborators:research_collaborators(id, collaborator_id, contribution, credit_share, joined_at, profiles(full_name))',
-      { count: 'exact' }
-    )
-    .neq('status', 'draft')
-    .order('created_at', { ascending: false })
-    .range(offset, offset + PAGE_SIZE - 1)
+  // Filter + paginate mock research listings
+  const filtered = filterListings(MOCK_LISTINGS, {
+    search:       params.search,
+    license_type: params.license_type,
+    status:       params.status,
+  })
+  const { data: listings, total: count, totalPages } = paginate(filtered, page, PAGE_SIZE)
 
-  if (params.search)       query = query.ilike('title', `%${params.search}%`)
-  if (params.license_type) query = query.eq('license_type', params.license_type)
-  if (params.status)       query = query.eq('status', params.status)
+  // Map entries (from knowledge vault for cross-module map)
+  const mapEntries = MOCK_MAP_ENTRIES
 
-  const { data: listings, error, count } = await query
-  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
-
-  const { data: mapEntries } = await supabase
-    .from('knowledge_entries')
-    .select('id, title, category, access_tier, latitude, longitude, verified')
-    .not('latitude', 'is', null)
-    .not('longitude', 'is', null)
-    .limit(200)
-
-  const canPublish = profile?.role && ['researcher', 'admin'].includes(profile.role)
+  const canPublish = ['researcher', 'admin'].includes(profile.role)
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
-      <Navbar userRole={profile?.role} pendingNotifications={pendingCount ?? 0} />
+      <Navbar userRole={profile.role} pendingNotifications={pendingCount} />
 
       {/* Skip to content */}
       <a href="#research-listings" className="skip-nav">Skip to research listings</a>
@@ -190,10 +170,10 @@ export default async function ResearchPage({
       {/* Main */}
       <main id="research-listings" tabIndex={-1} className="flex flex-col flex-1 outline-none">
         <ResearchHubClient
-          listings={listings ?? []}
-          mapEntries={mapEntries ?? []}
-          error={error?.message}
-          totalCount={count ?? 0}
+          listings={listings}
+          mapEntries={mapEntries}
+          error={undefined}
+          totalCount={count}
           totalPages={totalPages}
           currentPage={page}
           currentFilters={{
@@ -202,8 +182,8 @@ export default async function ResearchPage({
             status:       params.status,
           }}
           licenseLabels={LICENSE_TYPE_LABELS}
-          userRole={profile?.role ?? null}
-          userId={user?.id ?? null}
+          userRole={profile.role}
+          userId={user.id}
         />
       </main>
     </div>

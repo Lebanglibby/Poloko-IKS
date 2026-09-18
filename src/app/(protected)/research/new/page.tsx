@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/shared/Navbar'
 import { LicenseSelector } from '@/components/research/LicenseSelector'
 import { generateEntryHash } from '@/lib/hash'
-import type { LicenseType, ListingStatus } from '@/lib/types'
+import type { LicenseType, ListingStatus, ResearchListing } from '@/lib/types'
 import {
   Shield, Loader2, CheckCircle2, FlaskConical,
   ArrowLeft, AlertCircle, Tag, Users, BookOpen,
@@ -111,6 +111,30 @@ export default function NewResearchPage() {
       const hash = await generateEntryHash({ title, description: abstract, submittedBy: 'researcher' })
       setGeneratedHash(hash)
 
+      // Optimistic listing — stored in localStorage for instant display on /research
+      const optimisticListing: ResearchListing = {
+        id:                `optimistic-${Date.now()}`,
+        title,
+        abstract,
+        full_document_url: null,
+        status,
+        license_type:      licenseType,
+        license_terms:     null,
+        price:             isCommercial ? parseFloat(price) || 0 : 0,
+        author_id:         'demo-user-0001',
+        sha256_hash:       hash,
+        view_count:        0,
+        download_count:    0,
+        tags:              tags.split(',').map(t => t.trim()).filter(Boolean),
+        created_at:        new Date().toISOString(),
+        updated_at:        new Date().toISOString(),
+        profiles:          { full_name: 'Kabo Modise', community: 'University of Botswana' },
+        collaborators:     [],
+      }
+      try {
+        localStorage.setItem('poloko_pending_listing', JSON.stringify(optimisticListing))
+      } catch { /* storage unavailable — no-op */ }
+
       const res = await fetch('/api/research', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -171,20 +195,18 @@ export default function NewResearchPage() {
             )}
 
             <div className="flex flex-col gap-2">
-              {submittedId && (
-                <a
-                  href={`/research/${submittedId}`}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white shadow-sm"
-                  style={{ background: 'var(--r-primary)' }}
-                >
-                  View My Listing
-                </a>
-              )}
-              <Link
+              <a
                 href="/research"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white shadow-sm"
+                style={{ background: 'var(--r-primary)' }}
+              >
+                See My Listing in Research Hub →
+              </a>
+              <Link
+                href="/dashboard"
                 className="w-full flex items-center justify-center py-3 rounded-xl text-sm font-semibold border-2 border-[#E8DDD0] text-[#4B5563] hover:border-[#95D5B2] hover:text-[#2D6A4F] transition-colors"
               >
-                Browse Research Hub
+                Back to Dashboard
               </Link>
               <button
                 onClick={() => { setSuccess(false); setGeneratedHash(null); setSubmittedId(null); setTitle(''); setAbstract(''); setTags('') }}

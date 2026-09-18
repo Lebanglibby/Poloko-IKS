@@ -9,7 +9,7 @@ import {
   COURSE_CATEGORY_EMOJI,
   SKILL_LEVEL_LABELS,
 } from '@/lib/constants'
-import type { CourseCategory, SkillLevel } from '@/lib/types'
+import type { CourseCategory, SkillLevel, Course } from '@/lib/types'
 import {
   GraduationCap, ArrowLeft, Loader2, CheckCircle2,
   AlertCircle, ImageIcon, Shield, Sparkles,
@@ -74,7 +74,37 @@ export default function NewCoursePage() {
       })
       const json = await res.json()
       if (!res.ok) { setError(json.error ?? 'Failed to create course'); setLoading(false); return }
-      setNewCourseId(json.data.id)
+
+      // Optimistic course — stored for instant display on /learn
+      const optimisticCourse: Course = {
+        id:                json.data?.id ?? `optimistic-${Date.now()}`,
+        title:             title.trim(),
+        subtitle:          subtitle.trim() || null,
+        description:       description.trim() || null,
+        category,
+        skill_level:       skillLevel,
+        language,
+        creator_id:        'demo-user-0001',
+        cover_image_url:   coverUrl.trim()   || null,
+        preview_video_url: previewUrl.trim() || null,
+        price_bwp:         parseFloat(priceBwp) || 0,
+        status:            'pending_review',
+        rejection_note:    null,
+        reviewed_by:       null,
+        reviewed_at:       null,
+        enrolment_count:   0,
+        rating_avg:        0,
+        sha256_hash:       `pending-${Date.now()}`,
+        created_at:        new Date().toISOString(),
+        updated_at:        new Date().toISOString(),
+        profiles:          { full_name: 'Kabo Modise', community: 'University of Botswana' },
+        lessons:           [],
+      }
+      try {
+        localStorage.setItem('poloko_pending_course', JSON.stringify(optimisticCourse))
+      } catch { /* storage unavailable — no-op */ }
+
+      setNewCourseId(json.data?.id ?? optimisticCourse.id)
       setSuccess(true)
     } catch {
       setError('An unexpected error occurred.')
@@ -100,9 +130,12 @@ export default function NewCoursePage() {
               <Link href={`/create/${newCourseId}/lessons/new`} className="btn-learn w-full flex items-center justify-center gap-2">
                 <Sparkles className="h-4 w-4" aria-hidden="true" /> Add First Lesson
               </Link>
-              <Link href={`/create/${newCourseId}/edit`} className="w-full flex items-center justify-center py-3 rounded-xl text-sm font-semibold border-2 border-[#E8DDD0] text-[#4B5563] hover:border-[#FDE68A] hover:text-[#92400E] transition-colors">
-                Edit Course Details
-              </Link>
+              <a
+                href="/learn"
+                className="w-full flex items-center justify-center py-3 rounded-xl text-sm font-semibold border-2 border-[#FDE68A] text-[#92400E] hover:bg-[#FFFBEB] transition-colors"
+              >
+                See My Course in Learning Hub →
+              </a>
               <Link href="/create" className="text-xs text-[#9CA3AF] hover:text-[#4B5563] transition-colors py-1">
                 Back to My Courses
               </Link>

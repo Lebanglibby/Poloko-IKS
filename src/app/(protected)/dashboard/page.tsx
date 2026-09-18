@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/shared/Navbar'
 import { KnowledgeCard } from '@/components/vault/KnowledgeCard'
 import { ResearchCard } from '@/components/research/ResearchCard'
 import { CourseCard } from '@/components/learning/CourseCard'
 import { formatDate } from '@/lib/utils'
+import { MOCK_PROFILE, MOCK_ENTRIES, MOCK_LISTINGS, MOCK_COURSES } from '@/lib/mock-data'
 import {
   BookOpen, FlaskConical, Eye, Download,
   Clock, CheckCircle2, Plus, Leaf, ArrowRight,
@@ -20,64 +20,49 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
+  // Mock user — always logged in as researcher
+  const user    = MOCK_PROFILE
+  const profile = MOCK_PROFILE
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  // Mock data: user's own submissions (filter by submitted_by matching user.id)
+  const myEntries = MOCK_ENTRIES
+    .filter(e => e.submitted_by === user.id)
+    .slice(0, 6)
 
-  const { data: profile } = await supabase
-    .from('profiles').select('*').eq('id', user.id).single()
-  if (!profile) redirect('/login')
+  // Mock data: user's own research listings (filter by author_id)
+  const myListings = MOCK_LISTINGS
+    .filter(l => l.author_id === user.id)
+    .slice(0, 4)
 
-  const { data: myEntries } = await supabase
-    .from('knowledge_entries')
-    .select('*')
-    .eq('submitted_by', user.id)
-    .order('created_at', { ascending: false })
-    .limit(6)
+  // Mock data: user's own created courses
+  const myCourses = MOCK_COURSES
+    .filter(c => c.creator_id === user.id)
+    .slice(0, 3)
 
-  const { data: myListings } = await supabase
-    .from('research_listings')
-    .select('*, profiles(full_name)')
-    .eq('author_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(4)
+  // Mock data: enrolled courses (empty for demo — user hasn't enrolled yet)
+  const myEnrolments: Array<{
+    course_id: string
+    completed_lesson_ids: string[]
+    completed_at: string | null
+    courses: typeof MOCK_COURSES[0]
+  }> = []
 
-  /* Module 3 — creator courses */
-  const { data: myCourses } = await supabase
-    .from('courses')
-    .select('*, profiles(full_name, community), lessons(id)')
-    .eq('creator_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(3)
-
-  /* Module 3 — enrolled courses */
-  const { data: myEnrolments } = await supabase
-    .from('course_enrolments')
-    .select('course_id, completed_lesson_ids, completed_at, courses(*, profiles(full_name, community))')
-    .eq('learner_id', user.id)
-    .order('enrolled_at', { ascending: false })
-    .limit(3)
-
-  type PendingRequest = {
+  // Mock: no pending access requests
+  const pendingRequests: Array<{
     id: string
     created_at: string
     knowledge_entries: { title: string; access_tier: string } | null
-  }
-  const { data: pendingRequests, count: pendingCount } = await supabase
-    .from('access_requests')
-    .select('id, created_at, knowledge_entries(title, access_tier)', { count: 'exact' })
-    .eq('status', 'pending')
-    .limit(5) as unknown as { data: PendingRequest[] | null; count: number | null; error: unknown }
+  }> = []
+  const pendingCount = 0
 
-  const totalViews     = myListings?.reduce((s, l) => s + (l.view_count     ?? 0), 0) ?? 0
-  const totalDownloads = myListings?.reduce((s, l) => s + (l.download_count ?? 0), 0) ?? 0
+  const totalViews     = myListings.reduce((s, l) => s + (l.view_count     ?? 0), 0)
+  const totalDownloads = myListings.reduce((s, l) => s + (l.download_count ?? 0), 0)
   const isElder        = ['elder', 'admin'].includes(profile.role)
   const isResearcher   = ['researcher', 'admin'].includes(profile.role)
 
   return (
     <div className="min-h-screen bg-[#FDFBF7]">
-      <Navbar userRole={profile.role} pendingNotifications={pendingCount ?? 0} />
+      <Navbar userRole={profile.role} pendingNotifications={pendingCount} />
 
       <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
 
@@ -119,9 +104,9 @@ export default async function DashboardPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: BookOpen,     label: 'My Submissions', value: myEntries?.length  ?? 0, bg: '#FEF9F0', border: '#FDBA74',  iconColor: '#9A3412'  },
-            { icon: FlaskConical, label: 'My Research',    value: myListings?.length ?? 0, bg: '#F0F7F4', border: '#95D5B2',  iconColor: '#2D6A4F'  },
-            { icon: GraduationCap,label: 'My Courses',     value: myCourses?.length  ?? 0, bg: '#FFFBEB', border: '#FDE68A',  iconColor: '#92400E'  },
+            { icon: BookOpen,     label: 'My Submissions', value: myEntries.length,  bg: '#FEF9F0', border: '#FDBA74',  iconColor: '#9A3412'  },
+            { icon: FlaskConical, label: 'My Research',    value: myListings.length, bg: '#F0F7F4', border: '#95D5B2',  iconColor: '#2D6A4F'  },
+            { icon: GraduationCap,label: 'My Courses',     value: myCourses.length,  bg: '#FFFBEB', border: '#FDE68A',  iconColor: '#92400E'  },
             { icon: Eye,          label: 'Total Views',    value: totalViews,               bg: '#F3F0EB', border: '#E5D8C8',  iconColor: '#6B5344'  },
           ].map(({ icon: Icon, label, value, bg, border, iconColor }) => (
             <div key={label} className="rounded-2xl border p-5 bg-white r-stat-card" style={{ borderColor: border }}>
@@ -181,7 +166,7 @@ export default async function DashboardPage() {
               <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add entry
             </Link>
           </div>
-          {!myEntries || myEntries.length === 0 ? (
+          {myEntries.length === 0 ? (
             <EmptyCard
               message="You haven&apos;t shared any knowledge entries yet."
               action={{ href: '/submit', label: 'Share your first entry' }}
@@ -207,7 +192,7 @@ export default async function DashboardPage() {
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Publish research
               </Link>
             </div>
-            {!myListings || myListings.length === 0 ? (
+            {myListings.length === 0 ? (
               <EmptyCard
                 message="You haven&apos;t published any research listings yet."
                 action={{ href: '/research/new', label: 'Publish your first study' }}
@@ -238,7 +223,7 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
-          {!myCourses || myCourses.length === 0 ? (
+          {myCourses.length === 0 ? (
             <EmptyCard
               message="You haven&apos;t created any courses yet."
               action={{ href: '/create/new', label: 'Create your first course' }}
@@ -254,7 +239,7 @@ export default async function DashboardPage() {
         </section>
 
         {/* ── Module 3: My Enrolments (learner view) ──────────── */}
-        {myEnrolments && myEnrolments.length > 0 && (
+        {myEnrolments.length > 0 && (
           <section className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-[#1F2937] flex items-center gap-2">

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Leaf, BookOpen, Map, FlaskConical, LayoutDashboard,
@@ -96,8 +97,15 @@ export function Navbar({ userRole, pendingNotifications = 0 }: NavbarProps) {
             className="flex items-center gap-2.5 shrink-0"
             aria-label="Poloko IKS — Home"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#9A3412] shadow-sm">
-              <Leaf className="h-4.5 w-4.5 text-white" style={{ width: 18, height: 18 }} aria-hidden="true" />
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden shadow-sm bg-[#9A3412]">
+              <Image
+                src="/poloko_logo.jpeg"
+                alt="Poloko IKS logo"
+                width={36}
+                height={36}
+                className="object-cover w-full h-full"
+                priority
+              />
             </span>
             <div className="hidden sm:block leading-tight">
               <span className="block font-bold text-[#9A3412] text-base tracking-tight">Poloko IKS</span>

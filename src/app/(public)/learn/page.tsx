@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/shared/Navbar'
 import { CourseCatalogue } from '@/components/learning/CourseCatalogue'
 import { MediaGallery } from '@/components/learning/MediaGallery'
@@ -7,6 +6,7 @@ import {
   COURSE_CATEGORY_EMOJI,
   SKILL_LEVEL_LABELS,
 } from '@/lib/constants'
+import { MOCK_COURSES, MOCK_MEDIA_ITEMS, MOCK_PROFILE, filterCourses, paginate } from '@/lib/mock-data'
 import { GraduationCap, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import type { CourseCategory, SkillLevel } from '@/lib/types'
@@ -29,50 +29,32 @@ export default async function LearnPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  const params   = await searchParams
-  const supabase = await createClient()
+  const params = await searchParams
 
-  const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile }  = user
-    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
-    : { data: null }
+  // Mock user — always researcher
+  const user    = MOCK_PROFILE
+  const profile = MOCK_PROFILE
 
   const PAGE_SIZE = 12
-  const page   = Math.max(1, parseInt(params.page ?? '1', 10))
-  const offset = (page - 1) * PAGE_SIZE
+  const page = Math.max(1, parseInt(params.page ?? '1', 10))
 
-  let query = supabase
-    .from('courses')
-    .select('*, profiles(full_name, community)', { count: 'exact' })
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false })
-    .range(offset, offset + PAGE_SIZE - 1)
+  // Filter + paginate mock courses
+  const filtered = filterCourses(MOCK_COURSES, {
+    search:      params.search,
+    category:    params.category,
+    skill_level: params.skill_level,
+  })
+  const { data: courses, total: count, totalPages } = paginate(filtered, page, PAGE_SIZE)
 
-  if (params.category)    query = query.eq('category',    params.category)
-  if (params.skill_level) query = query.eq('skill_level', params.skill_level)
-  if (params.search)      query = query.ilike('title',    `%${params.search}%`)
-
-  const { data: courses, count } = await query
-  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
-
-  // Featured: most recently approved, up to 3
-  const { data: featured } = await supabase
-    .from('courses')
-    .select('*, profiles(full_name, community)')
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false })
-    .limit(3)
+  // Featured: first 3 approved courses
+  const featured = MOCK_COURSES.filter(c => c.status === 'approved').slice(0, 3)
 
   // Media gallery items
-  const { data: mediaItems } = await supabase
-    .from('media_items')
-    .select('*, profiles(full_name, community)')
-    .order('created_at', { ascending: false })
-    .limit(8)
+  const mediaItems = MOCK_MEDIA_ITEMS.slice(0, 8)
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] flex flex-col">
-      <Navbar userRole={profile?.role} />
+      <Navbar userRole={profile.role} />
 
       {/* Skip nav */}
       <a href="#course-catalogue" className="skip-nav">Skip to courses</a>
@@ -241,8 +223,8 @@ export default async function LearnPage({
       {/* ── Main catalogue ───────────────────────────────────────── */}
       <main id="course-catalogue" tabIndex={-1} className="flex-1 outline-none">
         <CourseCatalogue
-          courses={courses ?? []}
-          totalCount={count ?? 0}
+          courses={courses}
+          totalCount={count}
           totalPages={totalPages}
           currentPage={page}
           currentFilters={{
@@ -252,8 +234,8 @@ export default async function LearnPage({
           }}
           categoryLabels={COURSE_CATEGORY_LABELS}
           skillLabels={SKILL_LEVEL_LABELS}
-          userRole={profile?.role ?? null}
-          userId={user?.id ?? null}
+          userRole={profile.role}
+          userId={user.id}
         />
       </main>
 
